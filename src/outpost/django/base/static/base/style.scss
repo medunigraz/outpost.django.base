@@ -1,0 +1,74 @@
+$ci_light: #007B3C;
+$ci_dark: #007B3C;
+$ci_background: #333333;
+$ci_white: #FFFFFF;
+
+@-webkit-keyframes flip {
+    from {-webkit-transform: rotateY(0deg);}
+    to {-webkit-transform: rotateY(360deg);}
+}
+@keyframes flip {
+    from {transform: rotateY(0deg);}
+    to {transform: rotateY(360deg);}
+}
+body {
+  margin-top: 70px;
+}
+label {
+  font-weight: bold;
+}
+table.table-vcenter tbody tr {
+  td, th {
+    vertical-align: middle;
+  }
+}
+.navbar {
+  .logo {
+    padding: 10px;
+    height: 63px;
+    &:hover {
+      -webkit-animation: flip 10s infinite linear;
+      animation: flip 10s infinite linear;
+    }
+  }
+}
+.navbar-inverse {
+  background-color: $ci_background;
+  border-color: $ci_light;
+  .navbar-brand {
+    color: $ci_white;
+    &:hover {
+      color: $ci_dark;
+    }
+  }
+  .navbar-nav {
+    &> li {
+      &> a {
+        color: $ci_white;
+        &:hover {
+          color: $ci_dark;
+        }
+      }
+    }
+  }
+}
+.signin {
+  max-width: 30em;
+  margin: auto;
+}
+#splash {
+  background: url("splash.jpg") no-repeat center center;
+}
+.progress {
+  position: relative;
+}
+
+.progress span {
+  position: absolute;
+  display: block;
+  width: 100%;
+  font-weight: bold;
+}
+.container .row {
+    margin-bottom: 0.5em;
+}

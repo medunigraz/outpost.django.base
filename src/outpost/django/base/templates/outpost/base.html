@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+{% load static %}
+{% load compress %}
+{% load i18n %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
+    <title>API @ Medical University of Graz</title>
+    {% compress css %}
+    {% block style %}
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{% static 'bootswatch/sandstone/bootstrap.css' %}" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{% static 'base/style.scss' %}" type="text/x-scss" charset="utf-8">
+    {% endblock %}
+    {% endcompress %}
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <img src="{% static 'logo.svg' %}" class="hidden-xs navbar-left logo">
+          <a class="navbar-brand" rel="nofollow" href="/">
+            <span class="hidden-xs">API @ Medical University of Graz</span>
+            <span class="visible-xs">API @ MUG</span>
+          </a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            {% include 'oauth2/nav.html' %}
+            {% include 'api/nav.html' %}
+            {% include 'networktoken/nav.html' %}
+            {% include 'salt/nav.html' %}
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {% if request.user.is_authenticated %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <span class="glyphicon glyphicon-user"></span>
+                {{ request.user }}
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                {% if request.user.is_staff %}
+                <li>
+                  <a href="{% url 'admin:index' %}">
+                    <i class="glyphicon glyphicon-cog"></i>
+                    Backend
+                  </a>
+                </li>
+                {% endif %}
+                <li>
+                  <a href="{% url 'accounts:logout' %}">
+                    <i class="glyphicon glyphicon-log-out"></i>
+                    Logout
+                  </a>
+                </li>
+              </ul>
+            </li>
+            {% else %}
+            <li>
+              <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}">
+                <i class="glyphicon glyphicon-log-in"></i>
+                Login
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+    {% compress js %}
+    {% block script %}
+    <script src="{% static 'jquery/jquery.js' %}"></script>
+    <script src="{% static 'jsrender/jsrender.js' %}"></script>
+    <script src="{% static 'jquery-cookie/jquery.cookie.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+    <script src="{% static 'base/common.js' %}"></script>
+    <script>
+    var checkTaskProgress = function(id) {
+      var defer = $.Deferred();
+      var current = {};
+      function check() {
+        $.ajax({
+          url: decodeURIComponent("{% url 'base:task' task='#' %}").replace('#', id),
+          method: 'GET'
+        }).done(function(data) {
+          if (data.state === 'SUCCESS') {
+            defer.resolve(data);
+            return;
+          }
+          if (data.state === 'FAILURE') {
+            defer.reject(data);
+            return;
+          }
+          if (data.state === 'PROGRESS') {
+            defer.notify(data);
+          }
+          setTimeout(check, 1000);
+        }).fail(defer.reject);
+      };
+      check();
+      return defer.promise();
+    }
+    </script>
+    {% endblock %}
+    {% endcompress %}
+  </body>
+</html>

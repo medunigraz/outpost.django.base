@@ -1,0 +1,12 @@
+{% load i18n %}
+<script id="tmpl-confirm-delete" type="text/x-jsrender">
+{{ caption }}
+<button type="button" class="btn btn-danger btn-sm pull-left proceed btn-block">
+  <span class="glyphicon glyphicon-ok"></span>
+  {% trans "Yes" %}
+</button>
+<button type="button" class="btn btn-default btn-sm pull-right btn-block">
+  <span class="glyphicon glyphicon-remove"></span>
+  {% trans "No" %}
+</button>
+</script>

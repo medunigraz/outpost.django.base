@@ -1,0 +1,12 @@
+{% extends 'outpost/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="alert alert-danger" role="alert">
+  {% if request.sentry.id %}
+  {% blocktrans with id=request.sentry.id %}
+    If you need assistance, you may reference this error as <strong>{{ id }}</strong>.
+    {% endblocktrans %}
+  {% endif %}
+<div>
+{% endblock %}

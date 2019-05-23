@@ -1,0 +1,139 @@
+# outpost.django.base translations
+# Copyright (C) 2019, Medical University of Graz
+# This file is distributed under the same license as the outpost package.
+# Michael Fladischer <michael.fladischer@medunigraz.at>, 2019
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: outpost.django.base\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-02-28 10:40+0100\n"
+"PO-Revision-Date: 2019-01-25 22:12+02\n"
+"Last-Translator: Michael Fladischer <michael.fladischer@medunigraz.at>\n"
+"Language-Team: MedUniGraz <development@medunigraz.at>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/outpost/django/base/models.py:57
+msgid "Icon"
+msgstr ""
+
+#: src/outpost/django/base/models.py:80
+msgid "License"
+msgstr "Lizenz"
+
+#: src/outpost/django/base/models.py:91
+msgid "Replaceable entity"
+msgstr ""
+
+#: src/outpost/django/base/models.py:112
+msgid "Notification"
+msgstr "Benachrichtigung"
+
+#: src/outpost/django/base/validators.py:43
+msgid "Requests coming in too fast"
+msgstr "Anfragen werden zu schnell gestellt"
+
+#: src/outpost/django/base/validators.py:58
+msgid "Could not parse public key"
+msgstr "Konnte öffentlichen Schlüssel nicht lesen"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nein"
+
+msgid "This is a very common password."
+msgstr "Dies ist ein sehr gebräuchliches Passwort."
+
+msgid "Add another word or two. Uncommon words are better."
+msgstr ""
+"Fügen Sie ein oder zwei weitere Wörter hinzu. Ungewöhnliche Wörter sind "
+"besser."
+
+msgid "Use a few words, avoid common phrases."
+msgstr "Verwenden Sie einige Wörter, vermeiden Sie gängige Ausdrücke."
+
+msgid "No need for symbols, digits, or uppercase letters."
+msgstr "Keine Notwendigkeit für Symbole, Ziffern oder Großbuchstaben."
+
+msgid "Straight rows of keys are easy to guess."
+msgstr "Gerade Reihen von Tasten sind leicht zu erraten."
+
+msgid "Short keyboard patterns are easy to guess."
+msgstr "Kurze Tastaturmuster sind leicht zu erraten."
+
+msgid "Use a longer keyboard pattern with more turns."
+msgstr "Verwenden Sie ein längeres Tastaturmuster mit mehreren Variationen."
+
+msgid "Repeats like \"aaa\" are easy to guess."
+msgstr "Wiederholungen wie \"aaa\" sind leicht zu erraten."
+
+msgid ""
+"Repeats like \"abcabcabc\" are only slightly harder to guess than \"abc\"."
+msgstr ""
+"Wiederholungen wie \"abcabcabc\" sind nur etwas schwieriger zu erraten "
+"als \"abc\"."
+
+msgid "Avoid repeated words and characters."
+msgstr "Vermeiden Sie wiederholte Wörter und Zeichen."
+
+msgid "Sequences like \"abc\" or \"6543\" are easy to guess."
+msgstr "Sequenzen wie \"abc\" oder \"6543\" sind leicht zu erraten."
+
+msgid "Avoid sequences."
+msgstr "Vermeiden Sie Sequenzen."
+
+msgid "Recent years are easy to guess."
+msgstr "Die letzten Jahre sind leicht zu erraten."
+
+msgid "Avoid recent years."
+msgstr "Vermeiden Sie die letzten Jahre."
+
+msgid "Avoid years that are associated with you."
+msgstr "Vermeiden Sie Jahre, die mit Ihnen verbunden sind."
+
+msgid "Dates are often easy to guess."
+msgstr "Termine sind oft leicht zu erraten."
+
+msgid "Avoid dates and years that are associated with you."
+msgstr "Vermeiden Sie Termine und Jahre, die Ihnen zugeordnet sind."
+
+msgid "This is a top-10 common password."
+msgstr "Dies ist ein häufig verwendetes Passwort."
+
+msgid "This is a top-100 common password."
+msgstr "Dies ist ein häufig verwendetes Passwort."
+
+msgid "This is similar to a commonly used password."
+msgstr "Dies ist ähnlich einem häufig verwendeten Passwort."
+
+msgid "A word by itself is easy to guess."
+msgstr "Ein Wort für sich ist leicht zu erraten."
+
+msgid "Names and surnames by themselves are easy to guess."
+msgstr "Namen und Nachnamen sind leicht zu erraten."
+
+msgid "Common names and surnames are easy to guess."
+msgstr "Häufige Namen und Nachnamen sind leicht zu erraten."
+
+msgid "Capitalization doesn't help very much."
+msgstr "Kapitalisierung hilft nicht viel."
+
+msgid "All-uppercase is almost as easy to guess as all-lowercase."
+msgstr ""
+"Ausschliesslich Großbuchstaben sind fast so leicht zu erraten wie "
+"ausschliesslich Kleinbuchstaben."
+
+msgid "Reversed words aren't much harder to guess.  "
+msgstr "Umgekehrte Wörter sind nicht viel schwieriger zu erraten."
+
+msgid ""
+"Predictable substitutions like '@' instead of 'a' don't help very much."
+msgstr ""
+"Vorhersehbare Substitutionen wie '@' anstelle von 'a' helfen nicht viel."

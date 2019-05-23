@@ -1,0 +1,53 @@
+{% extends "registration/base.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block style %}
+{{ block.super }}
+<style>
+#logo {
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8 well">
+        <div class="row">
+            <div class="col-md-4 visible-md-block visible-lg-block">
+                <p>
+                <img id="logo" src="{% static 'logo.svg' %}" />
+                </p>
+            </div>
+            <div class="col-md-8">
+                <form method="post" action="{% url 'accounts:login' %}" class="form-signin">
+                    {% csrf_token %}
+                    {% if next %}
+                    <div class="alert alert-info" role="alert">
+                        {% if user.is_authenticated %}
+                        Your account doesn't have access to this page. To proceed, please login with an account that has access.
+                        {% else %}
+                        Please login to see this page.
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {{ form|crispy }}
+                    <button class="btn btn-lg btn-primary btn-block" type="submit">
+                        <i class="glyphicon glyphicon-log-in"></i>
+                        Sign in
+                    </button>
+                    <a href="{% url 'saml2:saml2_login' %}" class="btn btn-lg btn-warning btn-block">
+                        <i class="glyphicon glyphicon-flash"></i>
+                        Single Sign On
+                    </a>
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2"></div>
+</div>
+{% endblock %}
