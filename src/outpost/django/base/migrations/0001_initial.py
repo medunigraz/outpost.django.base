@@ -8,74 +8,67 @@ from django.conf import settings
 
 class Migration(migrations.Migration):
 
-    forward = [
-    ]
+    forward = []
     reverse = [
-        '''
+        """
         DROP VIEW IF EXISTS "public"."typo3_news";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."typo3_event";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."typo3_calendar";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."typo3_category";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."typo3_language";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "typo3"."language";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "typo3"."category";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "typo3"."event";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "typo3"."calendar";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "typo3"."news";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."campusonline_room";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."campusonline_room_category";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."campusonline_floor";
-        ''',
-        '''
+        """,
+        """
         DROP VIEW IF EXISTS "public"."campusonline_building";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "campusonline"."gebaeude";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "campusonline"."stockwerk";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "campusonline"."raum";
-        ''',
-        '''
+        """,
+        """
         DROP FOREIGN TABLE IF EXISTS "campusonline"."raum_kategorie";
-        ''',
-        '''
+        """,
+        """
         DROP SERVER IF EXISTS "sqlalchemy";
-        ''',
+        """,
     ]
 
-    dependencies = [
-    ]
+    dependencies = []
 
-    operations = [
-        migrations.RunSQL(
-            forward,
-            reverse
-        )
-    ]
+    operations = [migrations.RunSQL(forward, reverse)]

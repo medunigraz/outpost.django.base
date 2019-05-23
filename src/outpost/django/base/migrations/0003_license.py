@@ -7,17 +7,23 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('base', '0002_icon'),
-    ]
+    dependencies = [("base", "0002_icon")]
 
     operations = [
         migrations.CreateModel(
-            name='License',
+            name="License",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=128)),
-                ('text', models.TextField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=128)),
+                ("text", models.TextField()),
             ],
-        ),
+        )
     ]

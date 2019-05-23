@@ -7,16 +7,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('base', '0003_license'),
-    ]
+    dependencies = [("base", "0003_license")]
 
     operations = [
         migrations.CreateModel(
-            name='ReplaceableEntity',
+            name="ReplaceableEntity",
             fields=[
-                ('name', models.CharField(max_length=16, primary_key=True, serialize=False)),
-                ('character', models.CharField(max_length=1)),
+                (
+                    "name",
+                    models.CharField(max_length=16, primary_key=True, serialize=False),
+                ),
+                ("character", models.CharField(max_length=1)),
             ],
-        ),
+        )
     ]

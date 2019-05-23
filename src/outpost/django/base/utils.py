@@ -11,10 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class Uuid4Upload(str):
-
     def __new__(cls, instance, filename):
         f = PurePosixPath(filename)
-        u = urlsafe_b64encode(uuid4().bytes).decode('ascii').rstrip('=')
+        u = urlsafe_b64encode(uuid4().bytes).decode("ascii").rstrip("=")
         p = PurePosixPath(instance.__module__, instance._meta.object_name)
         return str.__new__(cls, p.joinpath(u).with_suffix(f.suffix))
 
@@ -53,18 +52,17 @@ def colorscale(hexstr, scalefactor):
     return "%02x%02x%02x" % (r, g, b)
 
 
-class Process():
-
+class Process:
     def __init__(self, *args, stderr=subprocess.STDOUT):
         self.handlers = []
-        logger.debug('Preparing: {}'.format(' '.join(args)))
+        logger.debug("Preparing: {}".format(" ".join(args)))
         self.args = args
         self.cmd = partial(
             subprocess.Popen,
             args,
             stdout=subprocess.PIPE,
             stderr=stderr,
-            universal_newlines=True
+            universal_newlines=True,
         )
 
     def handler(self, h):
@@ -72,48 +70,46 @@ class Process():
             self.handlers.append(h)
 
     def run(self):
-        logger.debug(f'Executing: {self.args}')
+        logger.debug(f"Executing: {self.args}")
         pipe = self.cmd()
 
         while True:
             line = pipe.stdout.readline().strip()
 
-            if line == '' and pipe.poll() is not None:
+            if line == "" and pipe.poll() is not None:
                 break
 
-            logger.debug('Process line: {}'.format(line))
+            logger.debug("Process line: {}".format(line))
             for h in self.handlers:
                 h(line)
         retcode = pipe.returncode
-        logger.debug(f'Done: {self.args} returns {retcode}')
+        logger.debug(f"Done: {self.args} returns {retcode}")
         return retcode
 
 
 class MaterializedView:
-
     def __init__(self, name):
         from django.db import connection
+
         self.name = name
         self.connection = connection
 
     def refresh(self):
-        from django.db import (
-            IntegrityError,
-            ProgrammingError,
-        )
-        query_default = f'''
+        from django.db import IntegrityError, ProgrammingError
+
+        query_default = f"""
         REFRESH MATERIALIZED VIEW {self.name};
-        '''
-        query_concurrent = f'''
+        """
+        query_concurrent = f"""
         REFRESH MATERIALIZED VIEW CONCURRENTLY {self.name};
-        '''
+        """
         try:
             with self.connection.cursor() as cursor:
                 if self.has_unique_indizes():
-                    logger.debug(f'Concurrent refresh: {self.name}')
+                    logger.debug(f"Concurrent refresh: {self.name}")
                     cursor.execute(query_concurrent)
                 else:
-                    logger.debug(f'Refresh: {self.name}')
+                    logger.debug(f"Refresh: {self.name}")
                     cursor.execute(query_default)
         except (IntegrityError, ProgrammingError) as e:
             logger.error(e)
@@ -121,7 +117,7 @@ class MaterializedView:
         return True
 
     def has_unique_indizes(self):
-        query = f'''
+        query = f"""
         SELECT
             COUNT(1) AS count
         FROM
@@ -129,16 +125,17 @@ class MaterializedView:
         WHERE
             tablename = '{self.name}' AND
             indexdef LIKE 'CREATE UNIQUE INDEX %'
-        '''
+        """
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             (index,) = cursor.fetchone()
-            logger.debug(f'View {self.name} has {index} unique inidzes')
+            logger.debug(f"View {self.name} has {index} unique inidzes")
             return index > 0
 
     def has_online_sources(self):
         from ..fdw import OutpostFdw
-        query = f'''
+
+        query = f"""
         SELECT
             cl_d.relname AS name,
             ns.nspname AS schema,
@@ -161,13 +158,13 @@ class MaterializedView:
         ORDER BY
             ns.nspname,
             cl_d.relname;
-        '''
-        logger.debug(f'Is materialized view source online: {self.name}')
+        """
+        logger.debug(f"Is materialized view source online: {self.name}")
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             for (name, schema, options) in cursor:
                 if options:
-                    args = dict([o.split('=', 1) for o in options])
+                    args = dict([o.split("=", 1) for o in options])
                     try:
                         OutpostFdw(args, {}).connection.connect()
                     except DBAPIError as e:
@@ -177,9 +174,9 @@ class MaterializedView:
 
     @property
     def comment(self):
-        query = f'''
+        query = f"""
         SELECT obj_description('{self.name}'::regclass);
-        '''
+        """
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             (data,) = cursor.fetchone()
@@ -187,8 +184,8 @@ class MaterializedView:
 
     @comment.setter
     def comment(self, value):
-        query = f'''
+        query = f"""
         COMMENT ON MATERIALIZED VIEW "{self.name}" IS '{value}';
-        '''
+        """
         with self.connection.cursor() as cursor:
             cursor.execute(query)

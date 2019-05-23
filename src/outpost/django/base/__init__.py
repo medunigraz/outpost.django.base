@@ -1,1 +1,1 @@
-default_app_config = 'outpost.django.base.apps.BaseConfig'
+default_app_config = "outpost.django.base.apps.BaseConfig"

@@ -7,25 +7,17 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('base', '0007_auto_20171113_1626'),
-    ]
+    dependencies = [("base", "0007_auto_20171113_1626")]
 
     operations = [
+        migrations.AlterModelOptions(name="icon", options={"verbose_name": "Icon"}),
         migrations.AlterModelOptions(
-            name='icon',
-            options={'verbose_name': 'Icon'},
+            name="license", options={"verbose_name": "License"}
         ),
         migrations.AlterModelOptions(
-            name='license',
-            options={'verbose_name': 'License'},
+            name="notification", options={"verbose_name": "Notification"}
         ),
         migrations.AlterModelOptions(
-            name='notification',
-            options={'verbose_name': 'Notification'},
-        ),
-        migrations.AlterModelOptions(
-            name='replaceableentity',
-            options={'verbose_name': 'Replaceable entity'},
+            name="replaceableentity", options={"verbose_name": "Replaceable entity"}
         ),
     ]

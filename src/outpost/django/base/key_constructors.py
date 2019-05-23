@@ -9,19 +9,19 @@ logger = logging.getLogger(__name__)
 
 
 class UpdatedAtKeyBit(KeyBitBase):
-    key = 'UpdatedAt:{m.app_label}.{m.model_name}'
+    key = "UpdatedAt:{m.app_label}.{m.model_name}"
 
     def get_data(self, **kwargs):
-        if 'view_instance' not in kwargs:
-            logger.warning('No view_instance key in kwargs dictionary')
+        if "view_instance" not in kwargs:
+            logger.warning("No view_instance key in kwargs dictionary")
             return None
-        model = kwargs['view_instance'].get_queryset().model
+        model = kwargs["view_instance"].get_queryset().model
         key = self.key.format(m=model._meta)
         value = cache.get(key, None)
-        logger.debug(f'Current value for UpdatedAt key {key}: {value}')
+        logger.debug(f"Current value for UpdatedAt key {key}: {value}")
         if not value:
             value = datetime.datetime.utcnow()
-            logger.debug(f'Setting value for UpdatedAt key {key}: {value}')
+            logger.debug(f"Setting value for UpdatedAt key {key}: {value}")
             cache.set(key, value=value)
         return force_text(value)
 
@@ -29,14 +29,13 @@ class UpdatedAtKeyBit(KeyBitBase):
     def update(cls, instance):
         key = cls.key.format(m=instance._meta)
         value = datetime.datetime.utcnow()
-        logger.debug(f'Setting value for UpdatedAt key {key}: {value}')
+        logger.debug(f"Setting value for UpdatedAt key {key}: {value}")
         cache.set(key, value=value)
 
 
 class AuthenticatedKeyBit(KeyBitBase):
-
     def get_data(self, request, **kwargs):
-        user = getattr(request, 'user', None)
+        user = getattr(request, "user", None)
         if user and user.is_authenticated:
-            return 'authenticated'
-        return 'anonymous'
+            return "authenticated"
+        return "anonymous"

@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('base', '0006_notification'),
-    ]
+    dependencies = [("base", "0006_notification")]
 
     operations = [
         migrations.AlterField(
-            model_name='notification',
-            name='object_id',
+            model_name="notification",
+            name="object_id",
             field=models.CharField(max_length=36),
-        ),
+        )
     ]
