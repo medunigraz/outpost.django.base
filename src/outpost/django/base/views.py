@@ -60,8 +60,8 @@ class ImageConvertView(TemplateView):
             if os.path.isfile(nconvert) and os.access(nconvert, os.X_OK):
                 inp_fd, inp = mkstemp()
                 outp_fd, outp = mkstemp()
-                # We do not need the filehandle for the resulting new TIFF file at
-                # this point
+                # We do not need the filehandle for the resulting new TIFF file
+                # at this point.
                 os.close(outp_fd)
                 filein.seek(0)
                 os.write(inp_fd, request.read())
