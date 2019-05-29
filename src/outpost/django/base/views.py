@@ -5,7 +5,6 @@ import subprocess
 from tempfile import mkstemp
 
 from celery.result import AsyncResult
-from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -17,6 +16,7 @@ from pudb import set_trace
 from wand.image import Image
 
 from . import models
+from .conf import settings
 
 
 class IndexView(TemplateView):
@@ -56,7 +56,7 @@ class ImageConvertView(TemplateView):
         img = PILImage.open(filein)
         # Ugly kludge because OpenText fucks up TIFF/JPEG inlines.
         if img.format == "TIFF":
-            nconvert = settings.OUTPOST.get("nconvert")
+            nconvert = settings.BASE_NCONVERT
             if os.path.isfile(nconvert) and os.access(nconvert, os.X_OK):
                 inp_fd, inp = mkstemp()
                 outp_fd, outp = mkstemp()
