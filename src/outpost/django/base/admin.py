@@ -21,3 +21,9 @@ class LicenseAdmin(admin.ModelAdmin):
 @admin.register(models.ReplaceableEntity)
 class ReplaceableAdmin(admin.ModelAdmin):
     search_fields = ("name",)
+
+
+@admin.register(models.MaterializedView)
+class MaterializedViewAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+    list_display = ("name", "updated")
