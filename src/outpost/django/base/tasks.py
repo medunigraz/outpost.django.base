@@ -22,7 +22,7 @@ class MaintainanceTaskMixin:
 
 
 class RefreshMaterializedViewTask(MaintainanceTaskMixin, Task):
-    def run(self, name, **kwargs):
+    def run(self, name, force=False, **kwargs):
 
         logger.debug(f"Refresh materialized view: {name}")
         models = apps.get_models()
@@ -43,8 +43,11 @@ class RefreshMaterializedViewTask(MaintainanceTaskMixin, Task):
                 if interval:
                     due = now - timedelta(seconds=interval)
                     if due < mv.updated:
-                        logger.debug(f"View is not due for refresh: {name}")
-                        return
+                        if not force:
+                            logger.debug(f"View is not due for refresh: {name}")
+                            return
+                        else:
+                            logger.info(f"Force refreshing view: {name}")
             if not mv.refresh():
                 logger.warn(f"Materialized view {name} failed to refresh.")
                 return
