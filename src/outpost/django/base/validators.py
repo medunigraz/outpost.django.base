@@ -70,3 +70,27 @@ class PublicKeyValidator(object):
             and (self.message == other.message)
             and (self.code == other.code)
         )
+
+
+@deconstructible
+class PrivateKeyValidator(object):
+    """
+    """
+
+    message = _("Could not parse private key")
+    code = "invalid"
+
+    def __call__(self, value):
+        value = force_text(value)
+        try:
+            asyncssh.import_private_key(value)
+        except asyncssh.public_key.KeyImportError:
+            logger.debug(f"Import of private key failed: {value}")
+            raise ValidationError(self.message, code=self.code)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, PrivateKeyValidator)
+            and (self.message == other.message)
+            and (self.code == other.code)
+        )
