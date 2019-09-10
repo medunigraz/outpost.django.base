@@ -30,21 +30,15 @@
             <span class="icon-bar"></span>
           </button>
           <img src="{% static 'logo.svg' %}" class="hidden-xs navbar-left logo">
-          <a class="navbar-brand" rel="nofollow" href="/">
-            <span class="hidden-xs">API @ Medical University of Graz</span>
-            <span class="visible-xs">API @ MUG</span>
-          </a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            {% include 'oauth2/nav.html' %}
+          <ul class="nav navbar-nav navbar-right">
             {% include 'api/nav.html' %}
+            {% include 'oauth2/nav.html' %}
             {% include 'networktoken/nav.html' %}
             {% include 'salt/nav.html' %}
             {% include 'redirect/nav.html' %}
             {% include 'borg/nav.html' %}
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
             {% if request.user.is_authenticated %}
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
