@@ -1,5 +1,5 @@
-from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
 from django.contrib.auth import authenticate, login
+from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
 from rest_framework.viewsets import ModelViewSet
 from reversion.views import RevisionMixin
 

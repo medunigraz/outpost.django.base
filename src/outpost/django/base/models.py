@@ -4,9 +4,8 @@ import subprocess
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, connection, IntegrityError, ProgrammingError
+from django.db import IntegrityError, ProgrammingError, connection, models
 from django.utils.translation import ugettext_lazy as _
-
 from django_extensions.db.models import TimeStampedModel
 from PIL import Image, ImageColor, ImageOps
 from sqlalchemy.exc import DBAPIError

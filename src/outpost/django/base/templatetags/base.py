@@ -1,9 +1,10 @@
 import re
+
 from bleach import clean
+from bs4 import BeautifulSoup
 from django.contrib.contenttypes.models import ContentType
 from django.template import Library
 from django.template.defaultfilters import stringfilter
-from bs4 import BeautifulSoup
 
 register = Library()
 
