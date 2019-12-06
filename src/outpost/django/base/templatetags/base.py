@@ -1,4 +1,5 @@
 import re
+from bleach import clean
 from django.contrib.contenttypes.models import ContentType
 from django.template import Library
 from django.template.defaultfilters import stringfilter
@@ -29,3 +30,9 @@ def split(value, splitter):
 def sanitize(value):
     bs = BeautifulSoup(value, features="lxml")
     return re.sub(r",[^\s]", r", ", bs.text)
+
+
+@register.filter
+@stringfilter
+def bleach(value):
+    return clean(value, strip=True)
