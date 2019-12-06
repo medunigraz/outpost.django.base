@@ -5,7 +5,24 @@ from functools import partial
 from pathlib import PurePosixPath
 from uuid import uuid4
 
+from PySide2.QtCore import (
+    QBuffer,
+    QByteArray,
+    QIODevice,
+    QObject,
+    QSize,
+    QUrl,
+    Signal,
+    Slot,
+)
+from PySide2.QtWebEngineWidgets import (
+    QWebEnginePage,
+    QWebEngineSettings,
+    QWebEngineView,
+)
+from PySide2.QtWidgets import QApplication, QLabel
 from sqlalchemy.exc import DBAPIError
+from xvfbwrapper import Xvfb
 
 logger = logging.getLogger(__name__)
 
@@ -189,3 +206,44 @@ class MaterializedView:
         """
         with self.connection.cursor() as cursor:
             cursor.execute(query)
+
+
+class WebEngineScreenshot(QApplication):
+    def __init__(self, url, width, height, *args, **kwargs):
+        self.display = Xvfb(int(width * 1.2), int(height * 1.2))
+        self.display.start()
+        super().__init__(*args, **kwargs)
+        self.engine = QWebEngineView()
+        size = QSize(width, height)
+        self.engine.setFixedSize(size)
+        self.engine.setPage(QWebEnginePage())
+        settings = self.engine.page().settings()
+        settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
+        settings.setAttribute(QWebEngineSettings.JavascriptCanOpenWindows, False)
+        settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, False)
+        settings.setAttribute(QWebEngineSettings.HyperlinkAuditingEnabled, False)
+        settings.setAttribute(QWebEngineSettings.PluginsEnabled, False)
+        settings.setAttribute(QWebEngineSettings.FullScreenSupportEnabled, False)
+        settings.setAttribute(QWebEngineSettings.ScreenCaptureEnabled, False)
+        self.engine.loadFinished.connect(self.load_finished)
+        self.engine.load(QUrl(url))
+        self.engine.show()
+
+    @Slot(bool)
+    def load_finished(self, state):
+        pixmap = self.engine.grab()
+        self.image = QByteArray()
+        buf = QBuffer(self.image)
+        buf.open(QIODevice.WriteOnly)
+        pixmap.save(buf, "PNG")
+        buf.close()
+        self.quit()
+
+    def run(self):
+        try:
+            self.exec_()
+        except Exception:
+            return None
+        finally:
+            self.display.stop()
+        return self.image.data()

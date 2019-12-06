@@ -1,7 +1,9 @@
 import json
 import logging
 from datetime import datetime, timedelta
+from hashlib import sha256
 
+from billiard import Pipe, Process
 from celery.task import PeriodicTask, Task
 from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
@@ -10,8 +12,10 @@ from django.db import transaction
 from django.utils import timezone
 from guardian.utils import clean_orphan_obj_perms
 
-from .models import NetworkedDeviceMixin, MaterializedView
+from .conf import settings
+from .models import MaterializedView, NetworkedDeviceMixin
 from .signals import materialized_view_refreshed
+from .utils import WebEngineScreenshot
 
 logger = logging.getLogger(__name__)
 
@@ -104,3 +108,45 @@ class CleanUpPermsTask(MaintainanceTaskMixin, PeriodicTask):
 
     def run(self):
         clean_orphan_obj_perms()
+
+
+class WebpageScreenshotTask(Task):
+    options = {"queue": "webpage"}
+
+    def run(
+        self,
+        url,
+        width=settings.BASE_WEBPAGE_PREVIEW_WIDTH,
+        height=settings.BASE_WEBPAGE_PREVIEW_HEIGHT,
+        lifetime=settings.BASE_WEBPAGE_PREVIEW_LIFETIME,
+    ):
+        url_id = sha256()
+        url_id.update(url.encode("utf-8"))
+        url_id.update(bytes(width))
+        url_id.update(bytes(height))
+        key = url_id.hexdigest()
+        logger.info(f"Screenshot for {url} @ {width}x{height}: {key}")
+        if key in cache:
+            logger.info(f"Found {key} in cache.")
+            return key
+        logger.info(f"Locking {key}")
+        lock = cache.lock(key)
+        lock.acquire()
+        logger.info("Starting WebEngineScreenshot app")
+        parent_conn, child_conn = Pipe()
+        p = Process(target=self.worker, args=(url, width, height, child_conn))
+        p.start()
+        image = parent_conn.recv()
+        p.join()
+        if not image:
+            logger.info("WebEngineScreenshot app returned nothing")
+            return None
+        logger.info("Writing WebEngineScreenshot app result to cache")
+        cache.set(key, image, timeout=lifetime)
+        logger.info("Removing WebEngineScreenshot app singleton")
+        return key
+
+    @staticmethod
+    def worker(url, width, height, conn):
+        app = WebEngineScreenshot(url, width, height)
+        conn.send(app.run())
