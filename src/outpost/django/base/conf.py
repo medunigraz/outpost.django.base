@@ -12,6 +12,9 @@ class BaseAppConf(AppConf):
     WEBPAGE_PREVIEW_LIFETIME = 86400
     WEBPAGE_PREVIEW_WIDTH = 1920
     WEBPAGE_PREVIEW_HEIGHT = 1080
+    AWS_ACCESS_KEY = None
+    AWS_SECRET_ACCESS_KEY = None
+    AWS_REGION_NAME = None
 
     class Meta:
         prefix = "base"
