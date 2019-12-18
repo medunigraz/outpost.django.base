@@ -88,18 +88,18 @@ class Process:
 
     def run(self):
         logger.debug(f"Executing: {self.args}")
-        pipe = self.cmd()
+        self.pipe = self.cmd()
 
         while True:
-            line = pipe.stdout.readline().strip()
+            line = self.pipe.stdout.readline().strip()
 
-            if line == "" and pipe.poll() is not None:
+            if line == "" and self.pipe.poll() is not None:
                 break
 
             logger.debug("Process line: {}".format(line))
             for h in self.handlers:
                 h(line)
-        retcode = pipe.returncode
+        retcode = self.pipe.returncode
         logger.debug(f"Done: {self.args} returns {retcode}")
         return retcode
 
