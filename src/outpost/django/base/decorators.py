@@ -52,10 +52,12 @@ def signal_connect(cls):
 def signal_skip(func):
     @wraps(func)
     def _decorator(sender, instance, **kwargs):
-        if hasattr(instance, "skip_signal"):
+        if getattr(instance, "_skip_signal", False):
             return None
-        instance.skip_signal = True
-        return func(sender, instance, **kwargs)
+        setattr(instance, '_skip_signal', True)
+        result = func(sender, instance, **kwargs)
+        delattr(instance, '_skip_signal')
+        return result
 
     return _decorator
 
