@@ -63,12 +63,21 @@ table.table-vcenter tbody tr {
   position: relative;
 }
 
+.table {
+  th, td {
+    .progress {
+      margin: 0;
+    }
+  }
+}
+/*
 .progress span {
   position: absolute;
   display: block;
   width: 100%;
   font-weight: bold;
 }
+*/
 .container .row {
     margin-bottom: 0.5em;
 }
