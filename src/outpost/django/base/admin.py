@@ -25,5 +25,12 @@ class ReplaceableAdmin(admin.ModelAdmin):
 
 @admin.register(models.MaterializedView)
 class MaterializedViewAdmin(admin.ModelAdmin):
-    search_fields = ("name",)
-    list_display = ("name", "updated")
+    search_fields = ("name", "task")
+    list_display = ("name", "updated", "task", "task_state", "interval")
+    readonly_fields = ("name", "task", "updated")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
