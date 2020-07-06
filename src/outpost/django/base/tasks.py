@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from hashlib import sha256
 
 from billiard import Pipe, Process
+from celery.result import AsyncResult
+from celery.states import READY_STATES
 from celery.task import PeriodicTask, Task
 from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
@@ -26,43 +28,25 @@ class MaintainanceTaskMixin:
 
 
 class RefreshMaterializedViewTask(MaintainanceTaskMixin, Task):
-    def run(self, name, force=False, **kwargs):
-
-        logger.debug(f"Refresh materialized view: {name}")
+    def run(self, pk, force=False, **kwargs):
+        mv = MaterializedView.objects.get(pk=pk)
+        logger.debug(f"Refresh materialized view: {mv}")
         models = apps.get_models()
-        model = next((m for m in models if m._meta.db_table == name), None)
-        interval = None
-        if model:
-            refresh = getattr(model, "Refresh", None)
-            if refresh:
-                interval = getattr(refresh, "interval", None)
-        else:
-            logger.warn(f"Could not find model: {name}")
+        model = next((m for m in models if m._meta.db_table == mv.name), None)
         with transaction.atomic():
-            mv, created = MaterializedView.objects.get_or_create(name=name)
-            now = timezone.now()
-            if created:
-                logger.info(f"Created entry for materialized view {name}")
-            else:
-                if interval:
-                    due = now - timedelta(seconds=interval)
-                    if due < mv.updated:
-                        if not force:
-                            logger.debug(f"View is not due for refresh: {name}")
-                            return
-                        else:
-                            logger.info(f"Force refreshing view: {name}")
             if not mv.refresh():
-                logger.warn(f"Materialized view {name} failed to refresh.")
+                logger.warn(f"Materialized view {mv} failed to refresh.")
                 return
-            mv.updated = now
+            mv.updated = timezone.now()
             mv.save()
-        materialized_view_refreshed.send(sender=self.__class__, name=name, model=model)
-        logger.info(f"Refreshed materialized view: {name}")
+        materialized_view_refreshed.send(
+            sender=self.__class__, name=mv.name, model=model
+        )
+        logger.info(f"Refreshed materialized view: {mv}")
 
 
 class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask):
-    run_every = timedelta(minutes=10)
+    run_every = timedelta(minutes=5)
     views = """
     SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm';
     """
@@ -70,11 +54,36 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
     def run(self, **kwargs):
         from django.db import connection
 
+        models = apps.get_models()
         logger.debug("Dispatching materialized view refresh tasks.")
         with connection.cursor() as relations:
             relations.execute(self.views)
             for (rel,) in relations:
-                RefreshMaterializedViewTask().delay(rel)
+                model = next((m for m in models if m._meta.db_table == rel), None)
+                if model:
+                    refresh = getattr(model, "Refresh", None)
+                    if refresh:
+                        interval = getattr(refresh, "interval", None)
+                else:
+                    logger.warn(f"Could not find model for: {rel}")
+                    interval = settings.BASE_MATERIALIZED_VIEW_REFRESH_INTERVAL
+                mv, created = MaterializedView.objects.get_or_create(
+                    name=rel, defaults={"interval": interval}
+                )
+                if created:
+                    logger.info(f"Created entry for materialized view {rel}")
+                else:
+                    if mv.updated + mv.interval > timezone.now():
+                        logger.debug(f"View is not due for refresh: {rel}")
+                        continue
+                if mv.task:
+                    if AsyncResult(str(mv.task)).state not in READY_STATES:
+                        logger.debug(f"Refresh task is already queued: {rel}")
+                        continue
+                task = RefreshMaterializedViewTask().si(mv.pk)
+                mv.task = task.freeze().id
+                mv.save()
+                transaction.on_commit(task.delay)
         connection.close()
 
 
