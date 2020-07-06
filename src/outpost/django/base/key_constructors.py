@@ -3,12 +3,14 @@ import logging
 
 from django.core.cache import cache
 from django.utils.encoding import force_text
-from rest_framework_extensions.key_constructor.bits import KeyBitBase
+from rest_framework_extensions.key_constructor import bits, constructors
+
+from .models import MaterializedView
 
 logger = logging.getLogger(__name__)
 
 
-class UpdatedAtKeyBit(KeyBitBase):
+class UpdatedAtKeyBit(bits.KeyBitBase):
     key = "UpdatedAt:{m.app_label}.{m.model_name}"
 
     def get_data(self, **kwargs):
@@ -33,9 +35,39 @@ class UpdatedAtKeyBit(KeyBitBase):
         cache.set(key, value=value)
 
 
-class AuthenticatedKeyBit(KeyBitBase):
+class MaterializedViewLastUpdateKeyBit(bits.KeyBitBase):
+    def get_data(self, **kwargs):
+        if "view_instance" not in kwargs:
+            logger.warning("No view_instance key in kwargs dictionary")
+            return None
+        name = kwargs["view_instance"].get_queryset().model._meta.db_table
+        try:
+            mv = MaterializedView.objects.exclude(updated=None).get(name=name)
+            return force_text(mv.updated)
+        except MaterializedView.DoesNotExist:
+            pass
+        return None
+
+
+class AuthenticatedKeyBit(bits.KeyBitBase):
     def get_data(self, request, **kwargs):
         user = getattr(request, "user", None)
         if user and user.is_authenticated:
             return "authenticated"
         return "anonymous"
+
+
+class BaseKeyConstructor(constructors.DefaultKeyConstructor):
+    updated = MaterializedViewLastUpdateKeyBit()
+    format = bits.FormatKeyBit()
+    language = bits.LanguageKeyBit()
+    unique_view_id = bits.UniqueViewIdKeyBit()
+    query_params = bits.QueryParamsKeyBit()
+
+
+class DetailKeyConstructor(BaseKeyConstructor):
+    retrieve_sql_query = bits.RetrieveSqlQueryKeyBit()
+
+
+class ListKeyConstructor(BaseKeyConstructor):
+    list_sql_query = bits.ListSqlQueryKeyBit()

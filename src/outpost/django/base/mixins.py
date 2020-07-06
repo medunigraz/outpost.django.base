@@ -2,6 +2,10 @@ from django.contrib.auth import authenticate, login
 from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
 from rest_framework.viewsets import ModelViewSet
 from reversion.views import RevisionMixin
+from rest_framework_extensions.cache.mixins import CacheResponseMixin
+from rest_framework_extensions.etag.mixins import ReadOnlyETAGMixin
+
+from . import key_constructors
 
 
 class MediatypeNegotiationMixin(object):
@@ -46,3 +50,10 @@ class HttpBasicAuthMixin(object):
                 if user:
                     login(request, user)
         return super().dispatch(request, *args, **kwargs)
+
+
+class ReadOnlyETAGCacheMixin(ReadOnlyETAGMixin, CacheResponseMixin):
+    object_cache_key_func = key_constructors.DetailKeyConstructor()
+    list_cache_key_func = key_constructors.ListKeyConstructor()
+    object_etag_func = key_constructors.DetailKeyConstructor()
+    list_etag_func = key_constructors.ListKeyConstructor()
