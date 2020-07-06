@@ -1,7 +1,7 @@
 import logging
 import subprocess
 
-from django.conf import settings
+from celery.result import AsyncResult
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError, ProgrammingError, connection, models
@@ -10,6 +10,7 @@ from django_extensions.db.models import TimeStampedModel
 from PIL import Image, ImageColor, ImageOps
 from sqlalchemy.exc import DBAPIError
 
+from .conf import settings
 from .utils import Uuid4Upload
 
 logger = logging.getLogger(__name__)
@@ -108,6 +109,10 @@ class Notification(models.Model):
 class MaterializedView(models.Model):
     name = models.CharField(max_length=256)
     updated = models.DateTimeField(null=True)
+    interval = models.DurationField(
+        default=settings.BASE_MATERIALIZED_VIEW_REFRESH_INTERVAL
+    )
+    task = models.UUIDField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -188,3 +193,10 @@ class MaterializedView(models.Model):
                         logger.warn(e)
                         return False
             return True
+
+    @property
+    def task_state(self):
+        if not self.task:
+            return None
+        task = AsyncResult(str(self.task))
+        return task.state
