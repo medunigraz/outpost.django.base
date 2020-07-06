@@ -54,9 +54,9 @@ def signal_skip(func):
     def _decorator(sender, instance, **kwargs):
         if getattr(instance, "_skip_signal", False):
             return None
-        setattr(instance, '_skip_signal', True)
+        setattr(instance, "_skip_signal", True)
         result = func(sender, instance, **kwargs)
-        delattr(instance, '_skip_signal')
+        delattr(instance, "_skip_signal")
         return result
 
     return _decorator
