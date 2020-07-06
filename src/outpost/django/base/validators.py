@@ -1,7 +1,10 @@
 import logging
+import entrypoints
 
 import asyncssh
+from zipfile import ZipFile, BadZipFile
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 from django.utils.encoding import force_text
@@ -94,3 +97,25 @@ class PrivateKeyValidator(object):
             and (self.message == other.message)
             and (self.code == other.code)
         )
+
+
+@deconstructible
+class PythonEntryPointsFileValidator(object):
+    """
+    """
+
+    message = _("No valid entry points found")
+    code = "invalid"
+
+    def __init__(self, names, condition=any):
+        self.names = names
+        self.condition = condition
+
+    def __call__(self, data):
+        if type(data.file) is TemporaryUploadedFile:
+            path = data.file.temporary_file_path()
+        else:
+            path = data.path
+        eps = (entrypoints.get_group_named(n, [path]) for n in self.names)
+        if not self.condition(eps):
+            raise ValidationError(self.message, code=self.code)
