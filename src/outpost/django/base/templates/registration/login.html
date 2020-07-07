@@ -5,14 +5,7 @@
 
 {% block style %}
 {{ block.super }}
-<style>
-body {
-  background-color: #333333;
-}
-#logo {
-  width: 100%;
-}
-</style>
+<link rel="stylesheet" href="{% static 'registration/login.scss' %}" type="text/x-scss" charset="utf-8">
 {% endblock %}
 
 {% block body %}
