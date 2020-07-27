@@ -1,9 +1,9 @@
 from django.contrib.auth import authenticate, login
 from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
 from rest_framework.viewsets import ModelViewSet
-from reversion.views import RevisionMixin
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from rest_framework_extensions.etag.mixins import ReadOnlyETAGMixin
+from reversion.views import RevisionMixin
 
 from . import key_constructors
 

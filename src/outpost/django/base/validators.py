@@ -1,8 +1,8 @@
 import logging
-import entrypoints
+from zipfile import BadZipFile, ZipFile
 
 import asyncssh
-from zipfile import ZipFile, BadZipFile
+import entrypoints
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import timezone
