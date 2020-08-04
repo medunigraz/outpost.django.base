@@ -80,7 +80,7 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
                     logger.warn(f"Could not find model for: {rel}")
                     interval = settings.BASE_MATERIALIZED_VIEW_REFRESH_INTERVAL
                 mv, created = MaterializedView.objects.get_or_create(
-                    name=rel, defaults={"interval": interval}
+                    name=rel, defaults={"interval": interval,}
                 )
                 if created:
                     logger.info(f"Created entry for materialized view {rel}")

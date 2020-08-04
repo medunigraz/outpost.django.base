@@ -3,6 +3,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = "base"
+
 urlpatterns = [
     url(
         r"^image/convert(?:\/(?P<format>[\w\d]+))?$",

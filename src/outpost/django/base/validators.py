@@ -1,15 +1,13 @@
 import logging
-from zipfile import BadZipFile, ZipFile
-
-import asyncssh
 import entrypoints
+import asyncssh
+from zipfile import ZipFile, BadZipFile
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
-from rest_framework.compat import unicode_to_repr
 from rest_framework.exceptions import ValidationError as APIValidationError
 from rest_framework.utils.representation import smart_repr
 
@@ -44,11 +42,6 @@ class EntryThrottleValidator(object):
                 raise APIValidationError(_("Requests coming in too fast"))
         except self.queryset.model.DoesNotExist:
             return
-
-    def __repr__(self):
-        return unicode_to_repr(
-            "<%s(queryset=%s)>" % (self.__class__.__name__, smart_repr(self.queryset))
-        )
 
 
 @deconstructible
