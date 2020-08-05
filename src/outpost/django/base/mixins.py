@@ -57,3 +57,13 @@ class ReadOnlyETAGCacheMixin(ReadOnlyETAGMixin, CacheResponseMixin):
     list_cache_key_func = key_constructors.ListKeyConstructor()
     object_etag_func = key_constructors.DetailKeyConstructor()
     list_etag_func = key_constructors.ListKeyConstructor()
+
+
+class ContextMixin(object):
+    extra_context = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.extra_context:
+            context.update(self.extra_context)
+        return context
