@@ -72,13 +72,13 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
             tasks = list()
             for (rel,) in relations:
                 model = next((m for m in models if m._meta.db_table == rel), None)
+                interval = settings.BASE_MATERIALIZED_VIEW_REFRESH_INTERVAL
                 if model:
                     refresh = getattr(model, "Refresh", None)
                     if refresh:
                         interval = getattr(refresh, "interval", None)
                 else:
                     logger.warn(f"Could not find model for: {rel}")
-                    interval = settings.BASE_MATERIALIZED_VIEW_REFRESH_INTERVAL
                 mv, created = MaterializedView.objects.get_or_create(
                     name=rel, defaults={"interval": interval,}
                 )
