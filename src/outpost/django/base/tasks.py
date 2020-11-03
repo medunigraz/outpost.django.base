@@ -87,9 +87,10 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
                 if created:
                     logger.info(f"Created entry for materialized view {rel}")
                 else:
-                    if mv.updated + mv.interval > timezone.now():
+                    if mv.updated and mv.updated + mv.interval > timezone.now():
                         logger.debug(f"View is not due for refresh: {rel}")
                         continue
+
                 if mv.task:
                     if AsyncResult(str(mv.task)).state not in READY_STATES:
                         logger.debug(f"Refresh task is already queued: {rel}")
