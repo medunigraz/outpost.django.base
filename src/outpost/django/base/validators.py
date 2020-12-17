@@ -2,6 +2,7 @@ import logging
 import entrypoints
 import asyncssh
 from zipfile import ZipFile, BadZipFile
+from croniter import croniter
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import timezone
@@ -111,4 +112,18 @@ class PythonEntryPointsFileValidator(object):
             path = data.path
         eps = (entrypoints.get_group_named(n, [path]) for n in self.names)
         if not self.condition(eps):
+            raise ValidationError(self.message, code=self.code)
+
+
+@deconstructible
+class CronValidator(object):
+    """
+    Validate cron style strings using croniter library.
+    """
+
+    message = _("Not a valid cron string")
+    code = "invalid"
+
+    def __call__(self, data):
+        if not croniter.is_valid(data):
             raise ValidationError(self.message, code=self.code)
