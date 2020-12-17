@@ -1,6 +1,8 @@
 import logging
 import entrypoints
 import asyncssh
+from os.path import normpath
+from pathlib import PurePath
 from zipfile import ZipFile, BadZipFile
 from croniter import croniter
 from django.core.exceptions import ValidationError
@@ -127,3 +129,40 @@ class CronValidator(object):
     def __call__(self, data):
         if not croniter.is_valid(data):
             raise ValidationError(self.message, code=self.code)
+
+
+@deconstructible
+class NormalizedPathValidator(object):
+    """
+    Validate normalized paths
+    """
+
+    def __call__(self, data: str):
+        if normpath(data) != data:
+            raise ValidationError(_("Path is not normalized"), code="not_normalized")
+
+
+@deconstructible
+class RelativePathValidator(object):
+    """
+    """
+
+    def __call__(self, data: str):
+        path = PurePath(data)
+        if path.is_absolute():
+            raise ValidationError(_("Absolute paths not allowed"), code="no_absolute")
+        if ".." in path.parts:
+            raise ValidationError(
+                _("No parent directory references allowed"), code="no_parent_references"
+            )
+
+
+@deconstructible
+class AbsolutePathValidator(object):
+    """
+    Validate absolute paths
+    """
+
+    def __call__(self, data: str):
+        if not PurePath(data).is_absolute():
+            raise ValidationError(_("Path is not absolute"), code="not_absolute")
