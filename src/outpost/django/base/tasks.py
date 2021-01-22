@@ -32,14 +32,16 @@ class RefreshMaterializedViewTask(MaintainanceTaskMixin, Task):
     def run(self, pk, force=False, **kwargs):
         mv = MaterializedView.objects.get(pk=pk)
         logger.debug(f"Refresh materialized view: {mv}")
-        models = apps.get_models()
-        model = next((m for m in models if m._meta.db_table == mv.name), None)
         with transaction.atomic():
             if not mv.refresh():
                 logger.warn(f"Materialized view {mv} failed to refresh.")
                 return None
             mv.updated = timezone.now()
             mv.save()
+        models = apps.get_models()
+        model = next((m for m in models if m._meta.db_table == mv.name), None)
+        if not model:
+            return
         materialized_view_refreshed.send(
             sender=self.__class__, name=mv.name, model=model
         )
