@@ -6,7 +6,7 @@ from hashlib import sha256
 from billiard import Pipe, Process
 from celery import chord
 from celery.result import AsyncResult
-from celery.states import READY_STATES
+from celery.states import READY_STATES, PENDING
 from celery.task import PeriodicTask, Task
 from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
@@ -29,7 +29,7 @@ class MaintainanceTaskMixin:
 
 
 class RefreshMaterializedViewTask(MaintainanceTaskMixin, Task):
-    def run(self, pk, force=False, **kwargs):
+    def run(self, pk, **kwargs):
         mv = MaterializedView.objects.get(pk=pk)
         logger.debug(f"Refresh materialized view: {mv}")
         with transaction.atomic():
@@ -64,10 +64,12 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
     SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm';
     """
 
-    def run(self, **kwargs):
+    def run(self, force=False, **kwargs):
         from django.db import connection
 
         models = apps.get_models()
+        now = timezone.now()
+        deadline = settings.BASE_MATERIALIZED_VIEW_TASK_DEADLINE
         logger.debug("Dispatching materialized view refresh tasks.")
         with connection.cursor() as relations:
             relations.execute(self.views)
@@ -88,15 +90,22 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
                 )
                 if created:
                     logger.info(f"Created entry for materialized view {rel}")
-                else:
-                    if mv.updated and mv.updated + mv.interval > timezone.now():
-                        logger.debug(f"View is not due for refresh: {rel}")
-                        continue
+                if not force:
+                    if mv.updated:
+                        due = mv.updated + mv.interval
+                        if due > now:
+                            logger.debug(f"View is not due for refresh: {rel}")
+                            continue
 
-                if mv.task:
-                    if AsyncResult(str(mv.task)).state not in READY_STATES:
-                        logger.debug(f"Refresh task is already queued: {rel}")
-                        continue
+                        if mv.task:
+                            # There is a task registered, check what state it
+                            # is in.
+                            state = AsyncResult(str(mv.task)).state
+                            if state == PENDING and due + deadline > timezone.now():
+                                # Task is still waiting for execution is is not
+                                # beyond it's deadline extension.
+                                logger.debug(f"Refresh task is still pending: {rel}")
+                                continue
                 task = RefreshMaterializedViewTask().si(mv.pk)
                 mv.task = task.freeze().id
                 mv.save()
