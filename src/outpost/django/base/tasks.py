@@ -4,15 +4,15 @@ from datetime import datetime, timedelta
 from hashlib import sha256
 
 from billiard import Pipe, Process
-from celery import chord
+from celery import shared_task, chord
 from celery.result import AsyncResult
 from celery.states import READY_STATES, PENDING
-from celery.task import PeriodicTask, Task
-from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
+#from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from guardian.utils import clean_orphan_obj_perms
 
 from .conf import settings
@@ -28,43 +28,14 @@ class MaintainanceTaskMixin:
     queue = "maintainance"
 
 
-class RefreshMaterializedViewTask(MaintainanceTaskMixin, Task):
-    def run(self, pk, **kwargs):
-        mv = MaterializedView.objects.get(pk=pk)
-        logger.debug(f"Refresh materialized view: {mv}")
-        with transaction.atomic():
-            if not mv.refresh():
-                logger.warn(f"Materialized view {mv} failed to refresh.")
-                return None
-            mv.updated = timezone.now()
-            mv.save()
-        models = apps.get_models()
-        model = next((m for m in models if m._meta.db_table == mv.name), None)
-        if not model:
-            return
-        materialized_view_refreshed.send(
-            sender=self.__class__, name=mv.name, model=model
-        )
-        logger.info(f"Refreshed materialized view: {mv}")
-        return model._meta.label
+class MaterializedViewTasks:
 
-
-class RefreshMaterializedViewResultTask(Task):
-    options = {"queue": "haystack"}
-    queue = "haystack"
-
-    def run(self, results):
-        with cache.lock("haystack-writer"):
-            CeleryHaystackUpdateIndex().run(filter(bool, results), remove=True)
-
-
-class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask):
-    run_every = timedelta(minutes=5)
-    views = """
+    view_query = """
     SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm';
     """
 
-    def run(self, force=False, **kwargs):
+    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:dispatch")
+    def dispatch(task, force=False):
         from django.db import connection
 
         models = apps.get_models()
@@ -72,7 +43,7 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
         deadline = settings.BASE_MATERIALIZED_VIEW_TASK_DEADLINE
         logger.debug("Dispatching materialized view refresh tasks.")
         with connection.cursor() as relations:
-            relations.execute(self.views)
+            relations.execute(MaterializedViewTasks.view_query)
             tasks = list()
             for (rel,) in relations:
                 model = next((m for m in models if m._meta.db_table == rel), None)
@@ -106,32 +77,58 @@ class RefreshMaterializedViewDispatcherTask(MaintainanceTaskMixin, PeriodicTask)
                                 # beyond it's deadline extension.
                                 logger.debug(f"Refresh task is still pending: {rel}")
                                 continue
-                task = RefreshMaterializedViewTask().si(mv.pk)
+                task = MaterializedViewTasks.refresh.si(mv.pk)
                 mv.task = task.freeze().id
                 mv.save()
                 tasks.append(task)
             transaction.on_commit(
-                lambda: chord(tasks)(RefreshMaterializedViewResultTask().s())
+                lambda: chord(tasks)(MaterializedViewTasks.result.s())
             )
         connection.close()
 
+    @shared_task(bind=True, ignore_result=False, name=f"{__name__}.MaterializedView:refresh")
+    def refresh(task, pk):
+        mv = MaterializedView.objects.get(pk=pk)
+        logger.debug(f"Refresh materialized view: {mv}")
+        with transaction.atomic():
+            if not mv.refresh():
+                logger.warn(f"Materialized view {mv} failed to refresh.")
+                return None
+            mv.updated = timezone.now()
+            mv.save()
+        models = apps.get_models()
+        model = next((m for m in models if m._meta.db_table == mv.name), None)
+        if not model:
+            return None
+        materialized_view_refreshed.send(
+            sender=MaterializedViewTasks.refresh, name=mv.name, model=model
+        )
+        logger.info(f"Refreshed materialized view: {mv}")
+        return model._meta.label
 
-class RefreshNetworkedDeviceTask(MaintainanceTaskMixin, PeriodicTask):
-    run_every = timedelta(minutes=2)
+    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:result")
+    def result(task, results):
+        with cache.lock("haystack-writer"):
+            #CeleryHaystackUpdateIndex().run(filter(bool, results), remove=True)
+            pass
 
-    def run(self, **kwargs):
+
+class NetworkedDeviceTasks:
+
+    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.NetworkedDevice:refresh")
+    def refresh(task):
         for cls in NetworkedDeviceMixin.__subclasses__():
             for obj in cls.objects.filter(enabled=True):
                 obj.update()
 
 
-class LockedCeleryHaystackSignalHandler(CeleryHaystackSignalHandler):
-    def run(self, action, identifier, **kwargs):
-        with cache.lock("haystack-writer"):
-            super().run(action, identifier, **kwargs)
+#class LockedCeleryHaystackSignalHandler(CeleryHaystackSignalHandler):
+#    def run(self, action, identifier, **kwargs):
+#        with cache.lock("haystack-writer"):
+#            super().run(action, identifier, **kwargs)
 
 
-# class UpdateHaystackTask(PeriodicTask):
+# class UpdateHaystackTask(Task):
 #    run_every = timedelta(hours=2)
 #    options = {"queue": "haystack"}
 #    queue = "haystack"
@@ -141,18 +138,18 @@ class LockedCeleryHaystackSignalHandler(CeleryHaystackSignalHandler):
 #            CeleryHaystackUpdateIndex().run(remove=True)
 
 
-class CleanUpPermsTask(MaintainanceTaskMixin, PeriodicTask):
-    run_every = timedelta(hours=1)
+class GuardianTasks:
 
-    def run(self):
+    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.Guardian:cleanup")
+    def cleanup(task):
         clean_orphan_obj_perms()
 
 
-class WebpageScreenshotTask(Task):
-    options = {"queue": "webpage"}
+class WebpageTasks:
 
-    def run(
-        self,
+    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.Webpage:sceenshot")
+    def screenshot(
+        task,
         url,
         width=settings.BASE_WEBPAGE_PREVIEW_WIDTH,
         height=settings.BASE_WEBPAGE_PREVIEW_HEIGHT,
@@ -172,7 +169,7 @@ class WebpageScreenshotTask(Task):
         lock.acquire()
         logger.info("Starting WebEngineScreenshot app")
         parent_conn, child_conn = Pipe()
-        p = Process(target=self.worker, args=(url, width, height, child_conn))
+        p = Process(target=WebpageTasks.worker, args=(url, width, height, child_conn))
         p.start()
         image = parent_conn.recv()
         p.join()
