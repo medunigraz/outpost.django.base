@@ -1,6 +1,7 @@
 import logging
 import entrypoints
 import asyncssh
+import mimetypes
 from os.path import normpath
 from pathlib import PurePath
 from zipfile import ZipFile, BadZipFile
@@ -166,3 +167,58 @@ class AbsolutePathValidator(object):
     def __call__(self, data: str):
         if not PurePath(data).is_absolute():
             raise ValidationError(_("Path is not absolute"), code="not_absolute")
+
+
+@deconstructible
+class FileValidator:
+    """
+    Validator for files, checking the extension and mimetype.
+    Initialization parameters:
+        extensions: iterable with allowed file extensions
+            ie. ('txt', 'doc')
+        mimetypes: iterable with allowed mimetypes
+            ie. ('image/png', )
+    Usage example::
+        MyModel(models.Model):
+            myfile = FileField(
+                validators=(
+                    FileValidator(mimetypes=['audio/flac'], ...),
+                ),
+            )
+    """
+
+    extension_message = _(
+        "Extension '%(extension)s' not allowed. Allowed extensions are: '%(extensions)s.'"
+    )
+    mimetype_message = _(
+        "MIME type '%(mimetype)s' is not valid. Allowed types are: %(mimetypes)s."
+    )
+
+    def __init__(self, extensions=None, mimetypes=None):
+        self.extensions = extensions
+        self.mimetypes = mimetypes
+
+    def __call__(self, value):
+        """
+        Check the extension and content type.
+        """
+
+        # Check the extension
+        ext = PurePath(value.name).suffix.lstrip(".")
+        if self.extensions and ext not in self.extensions:
+            message = self.extension_message % {
+                "extension": ext,
+                "extensions": ", ".join(self.extensions),
+            }
+
+            raise ValidationError(message)
+
+        # Check the content type
+        mimetype, _ = mimetypes.guess_type(value.name)
+        if mimetype and self.mimetypes and mimetype not in self.mimetypes:
+            message = self.mimetype_message % {
+                "mimetype": mimetype,
+                "mimetypes": ", ".join(self.mimetypes),
+            }
+
+            raise ValidationError(message)
