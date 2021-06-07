@@ -41,7 +41,3 @@ class TaskSerializer(serializers.BaseSerializer):
 #        fields = "__all__"
 #        read_only_fields = ("user",)
 
-    class Meta:
-        model = Hook
-        fields = "__all__"
-        read_only_fields = ("user",)
