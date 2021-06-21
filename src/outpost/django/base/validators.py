@@ -2,6 +2,7 @@ import logging
 import entrypoints
 import asyncssh
 import mimetypes
+import pint
 from os.path import normpath
 from pathlib import PurePath
 from zipfile import ZipFile, BadZipFile
@@ -249,3 +250,21 @@ class RedisURLValidator(object):
         if url.scheme() in ("redis", "redis+tls"):
             if not url.host():
                 raise ValidationError(_("No host specified"), code="host_missing")
+
+
+@deconstructible
+class UnitValidator(object):
+    """
+    Validate physical quantities.
+    """
+    ureg = pint.UnitRegistry()
+
+    def __init__(self, unit):
+        self.unit = self.ureg(unit).to_base_units().units
+
+    def __call__(self, data: str):
+        try:
+            if self.ureg(data).to_base_units().units == self.unit:
+                raise ValidationError(_("Incompatible unit specified"), code="incompatible_unit")
+        except pint.UndefinedUnitError:
+            raise ValidationError(_("Invalid unit specified"), code="invalid_unit")
