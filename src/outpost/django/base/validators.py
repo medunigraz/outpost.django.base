@@ -6,6 +6,7 @@ from os.path import normpath
 from pathlib import PurePath
 from zipfile import ZipFile, BadZipFile
 from croniter import croniter
+from purl import URL
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import timezone
@@ -222,3 +223,29 @@ class FileValidator:
             }
 
             raise ValidationError(message)
+
+
+@deconstructible
+class RedisURLValidator(object):
+    """
+    Validate Redis URLs.
+    """
+
+    def __call__(self, data: str):
+        try:
+            url = URL(data)
+        except ValueError:
+            raise ValidationError(_("URL cannot be parsed"), code="parse_error")
+        if url.has_query_param('db'):
+            if not url.query_param('db').isdigit():
+                raise ValidationError(_("Invalid port specified"), code="invalid_port")
+        if url.scheme() == "unix":
+            if url.host():
+                raise ValidationError(_("Hostname not supported for unix domain sockets"), code="unix_domain_socket_hostname")
+            if url.port():
+                raise ValidationError(_("Port not supported for unix domain sockets"), code="unix_domain_socket_port")
+            if not url.path():
+                raise ValidationError(_("No path specified for unix domain socket"), code="unix_domain_socket_path")
+        if url.scheme() in ("redis", "redis+tls"):
+            if not url.host():
+                raise ValidationError(_("No host specified"), code="host_missing")
