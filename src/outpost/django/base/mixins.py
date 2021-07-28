@@ -1,3 +1,4 @@
+from base64 import b64decode
 from django.contrib.auth import authenticate, login
 from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
 from rest_framework.viewsets import ModelViewSet
@@ -44,7 +45,7 @@ class HttpBasicAuthMixin(object):
         if header in request.META:
             authmeth, auth = request.META.get(header).split(" ", 1)
             if authmeth.lower() == "basic":
-                auth = auth.strip().decode("base64")
+                auth = b64decode(auth.strip())
                 username, password = auth.split(":", 1)
                 user = authenticate(username=username, password=password)
                 if user:
