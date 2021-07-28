@@ -45,7 +45,7 @@ class HttpBasicAuthMixin(object):
         if header in request.META:
             authmeth, auth = request.META.get(header).split(" ", 1)
             if authmeth.lower() == "basic":
-                auth = b64decode(auth.strip())
+                auth = b64decode(auth.strip()).decode("utf-8")
                 username, password = auth.split(":", 1)
                 user = authenticate(username=username, password=password)
                 if user:
