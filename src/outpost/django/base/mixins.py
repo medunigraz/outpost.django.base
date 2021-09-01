@@ -1,3 +1,4 @@
+import logging
 from base64 import b64decode
 from django.contrib.auth import authenticate, login
 from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
@@ -7,6 +8,9 @@ from rest_framework_extensions.etag.mixins import ReadOnlyETAGMixin
 from reversion.views import RevisionMixin
 
 from . import key_constructors
+
+
+logger = logging.getLogger(__name__)
 
 
 class MediatypeNegotiationMixin(object):
@@ -41,15 +45,19 @@ class HttpBasicAuthMixin(object):
     """
 
     def dispatch(self, request, *args, **kwargs):
-        header = "HTTP_AUTHORIZATION"
-        if header in request.META:
-            authmeth, auth = request.META.get(header).split(" ", 1)
-            if authmeth.lower() == "basic":
-                auth = b64decode(auth.strip()).decode("utf-8")
-                username, password = auth.split(":", 1)
-                user = authenticate(username=username, password=password)
-                if user:
-                    login(request, user)
+        header = request.META.get("HTTP_AUTHORIZATION")
+        if header:
+            try:
+                authmeth, auth = header.split(" ", 1)
+            except ValueError:
+                logger.warning(f"Unable to unpack HTTP basic authentication header: {header}")
+            else:
+                if authmeth.lower() == "basic":
+                    auth = b64decode(auth.strip()).decode("utf-8")
+                    username, password = auth.split(":", 1)
+                    user = authenticate(username=username, password=password)
+                    if user:
+                        login(request, user)
         return super().dispatch(request, *args, **kwargs)
 
 
