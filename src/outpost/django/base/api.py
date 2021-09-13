@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from flor import BloomFilter
 from rest_framework import generics, permissions, viewsets
 from rest_framework.response import Response
-from rest_hooks.models import Hook
+#from rest_hooks.models import Hook
 from zxcvbn import zxcvbn
 
 from . import models, serializers
@@ -57,17 +57,17 @@ class TaskViewSet(
         return AsyncResult(task)
 
 
-class HookViewSet(viewsets.ModelViewSet):
-    """
-    Retrieve, create, update or destroy webhooks.
-    """
-
-    queryset = Hook.objects.all()
-    model = Hook
-    serializer_class = serializers.HookSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+#class HookViewSet(viewsets.ModelViewSet):
+#    """
+#    Retrieve, create, update or destroy webhooks.
+#    """
+#
+#    queryset = Hook.objects.all()
+#    model = Hook
+#    serializer_class = serializers.HookSerializer
+#
+#    def perform_create(self, serializer):
+#        serializer.save(user=self.request.user)
 
 
 class PasswordStrengthViewSet(viewsets.ViewSet):
