@@ -38,6 +38,8 @@ class MaterializedViewTasks:
     def dispatch(task, force=False):
         from django.db import connection
 
+        queue = task.request.delivery_info.get("routing_key")
+
         models = apps.get_models()
         now = timezone.now()
         deadline = settings.BASE_MATERIALIZED_VIEW_TASK_DEADLINE
@@ -77,7 +79,7 @@ class MaterializedViewTasks:
                                 # beyond it's deadline extension.
                                 logger.debug(f"Refresh task is still pending: {rel}")
                                 continue
-                task = MaterializedViewTasks.refresh.si(mv.pk)
+                task = MaterializedViewTasks.refresh.signature((mv.pk,), immutable=True, queue=queue)
                 mv.task = task.freeze().id
                 mv.save()
                 tasks.append(task)
