@@ -37,3 +37,9 @@ def sanitize(value):
 @stringfilter
 def bleach(value):
     return clean(value, strip=True)
+
+
+@register.filter
+@stringfilter
+def truncate_words(value, limit):
+    return " ".join([w[:limit] for w in value.split(" ")])
