@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable
 import entrypoints
 import asyncssh
 import mimetypes
@@ -7,6 +8,7 @@ from os.path import normpath
 from pathlib import PurePath
 from zipfile import ZipFile, BadZipFile
 from croniter import croniter
+from PIL import Image
 from purl import URL
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
@@ -224,6 +226,104 @@ class FileValidator:
             }
 
             raise ValidationError(message)
+
+
+@deconstructible
+class ImageValidator:
+    """
+    Validator for images, checking the format and dimensions.
+    Initialization parameters:
+        formats: iterable with allowed image formats
+            ie. ('jpeg', 'png')
+        modes: iterable with allowed image formats
+            ie. ('rgb',)
+        width: integer or integer range for allowed width
+            ie. 1920 or range(1280, 1920)
+        height: integer or integer range for allowed height
+            ie. 1080 or range(720, 1080)
+    Usage example::
+        MyModel(models.Model):
+            myfile = FileField(
+                validators=(
+                    ImageValidator(
+                        formats=("png", "jpeg"),
+                        width=range(1280, 4096),
+                        height=range(720, 2160)
+                    ),
+                ),
+            )
+    """
+
+    format_message = _(
+        "Format '%(format)s' not allowed. Allowed formats are: '%(formats)s.'"
+    )
+    mode_message = _("Mode '%(mode)s' not allowed. Allowed modes are: '%(modes)s.'")
+    width_message = _(
+        "Width of %(width)s pixels is not within bounds. Should have width of %(allowed)s pixels."
+    )
+    height_message = _(
+        "Height of %(height)s pixels is not within bounds. Should have height of %(allowed)s pixels."
+    )
+
+    def __init__(self, formats=[], modes=[], width=None, height=None):
+        self.formats = [f.upper() for f in formats]
+        self.modes = [m.upper() for m in modes]
+        self.width = width
+        self.height = height
+
+    def __call__(self, value):
+        """
+        Check format, mode, width and height.
+        """
+        image = Image.open(value.file)
+
+        if self.formats and image.format.upper() not in self.formats:
+            message = self.format_message % {
+                "format": image.format.upper(),
+                "formats": ", ".join(self.formats),
+            }
+
+            raise ValidationError(message)
+
+        if self.modes and image.mode.upper() not in self.modes:
+            message = self.mode_message % {
+                "mode": image.mode.upper(),
+                "modes": ", ".join(self.modes),
+            }
+
+            raise ValidationError(message)
+
+        if self.width:
+            if type(self.width) == int:
+                if image.width != self.width:
+                    message = self.width_message % {
+                        "width": image.width,
+                        "allowed": self.width,
+                    }
+                    raise ValidationError(message)
+            if type(self.width) == range:
+                if image.width not in self.width:
+                    message = self.width_message % {
+                        "width": image.width,
+                        "allowed": f"{self.width.start}-{self.width.stop}",
+                    }
+                    raise ValidationError(message)
+
+        if self.height:
+            if type(self.height) == int:
+                if image.height != self.height:
+                    message = self.height_message % {
+                        "height": image.height,
+                        "allowed": self.height,
+                    }
+                    raise ValidationError(message)
+            if type(self.height) == range:
+                if image.height not in self.height:
+                    message = self.height_message % {
+                        "height": image.height,
+                        "allowed": f"{self.height.start}-{self.height.stop}",
+                    }
+                    raise ValidationError(message)
 
 
 @deconstructible
