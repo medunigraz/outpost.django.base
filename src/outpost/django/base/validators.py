@@ -23,8 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class EntryThrottleValidator(object):
-    """
-    """
+    """"""
 
     def __init__(self, queryset, search, field, delta):
         self.queryset = queryset
@@ -54,8 +53,7 @@ class EntryThrottleValidator(object):
 
 @deconstructible
 class PublicKeyValidator(object):
-    """
-    """
+    """"""
 
     message = _("Could not parse public key")
     code = "invalid"
@@ -78,8 +76,7 @@ class PublicKeyValidator(object):
 
 @deconstructible
 class PrivateKeyValidator(object):
-    """
-    """
+    """"""
 
     message = _("Could not parse private key")
     code = "invalid"
@@ -102,8 +99,7 @@ class PrivateKeyValidator(object):
 
 @deconstructible
 class PythonEntryPointsFileValidator(object):
-    """
-    """
+    """"""
 
     message = _("No valid entry points found")
     code = "invalid"
@@ -149,8 +145,7 @@ class NormalizedPathValidator(object):
 
 @deconstructible
 class RelativePathValidator(object):
-    """
-    """
+    """"""
 
     def __call__(self, data: str):
         path = PurePath(data)
@@ -337,16 +332,25 @@ class RedisURLValidator(object):
             url = URL(data)
         except ValueError:
             raise ValidationError(_("URL cannot be parsed"), code="parse_error")
-        if url.has_query_param('db'):
-            if not url.query_param('db').isdigit():
+        if url.has_query_param("db"):
+            if not url.query_param("db").isdigit():
                 raise ValidationError(_("Invalid port specified"), code="invalid_port")
         if url.scheme() == "unix":
             if url.host():
-                raise ValidationError(_("Hostname not supported for unix domain sockets"), code="unix_domain_socket_hostname")
+                raise ValidationError(
+                    _("Hostname not supported for unix domain sockets"),
+                    code="unix_domain_socket_hostname",
+                )
             if url.port():
-                raise ValidationError(_("Port not supported for unix domain sockets"), code="unix_domain_socket_port")
+                raise ValidationError(
+                    _("Port not supported for unix domain sockets"),
+                    code="unix_domain_socket_port",
+                )
             if not url.path():
-                raise ValidationError(_("No path specified for unix domain socket"), code="unix_domain_socket_path")
+                raise ValidationError(
+                    _("No path specified for unix domain socket"),
+                    code="unix_domain_socket_path",
+                )
         if url.scheme() in ("redis", "redis+tls"):
             if not url.host():
                 raise ValidationError(_("No host specified"), code="host_missing")
@@ -357,6 +361,7 @@ class UnitValidator(object):
     """
     Validate physical quantities.
     """
+
     ureg = pint.UnitRegistry()
 
     def __init__(self, unit):
@@ -365,6 +370,8 @@ class UnitValidator(object):
     def __call__(self, data: str):
         try:
             if self.ureg(data).to_base_units().units == self.unit:
-                raise ValidationError(_("Incompatible unit specified"), code="incompatible_unit")
+                raise ValidationError(
+                    _("Incompatible unit specified"), code="incompatible_unit"
+                )
         except pint.UndefinedUnitError:
             raise ValidationError(_("Invalid unit specified"), code="invalid_unit")
