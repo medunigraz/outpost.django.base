@@ -1,5 +1,11 @@
-from django.contrib.auth.models import Permission
+from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import (
+    Group,
+    Permission,
+)
 from django.contrib.contenttypes.models import ContentType
+from guardian.admin import GuardedModelAdminMixin as BaseGuardedModelAdminMixin
 from guardian.ctypes import get_content_type
 from guardian.models import (
     GroupObjectPermission,
@@ -9,6 +15,22 @@ from guardian.shortcuts import (
     assign_perm,
     get_objects_for_user,
 )
+
+
+class UserPermissionManageForm(forms.Form):
+    user = forms.ModelChoiceField(queryset=get_user_model().objects.all())
+
+
+class GroupPermissionManageForm(forms.Form):
+    group = forms.ModelChoiceField(queryset=Group.objects.all())
+
+
+class GuardedModelAdminMixin(BaseGuardedModelAdminMixin):
+    def get_obj_perms_user_select_form(self, request):
+        return UserPermissionManageForm
+
+    def get_obj_perms_group_select_form(self, request):
+        return GroupPermissionManageForm
 
 
 class GuardedModelAdminFilterMixin:
