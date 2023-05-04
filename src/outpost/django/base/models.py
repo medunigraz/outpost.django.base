@@ -114,6 +114,11 @@ class MaterializedView(models.Model):
     )
     task = models.UUIDField(blank=True, null=True)
 
+    class Meta:
+        ordering = (
+            "name",
+        )
+
     def __str__(self):
         return self.name
 
