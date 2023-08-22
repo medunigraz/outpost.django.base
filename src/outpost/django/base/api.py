@@ -29,7 +29,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     filter_fields = ("object_id", "content_type")
 
     def get_queryset(self):
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             return super().get_queryset().filter(user=self.request.user)
         return super().get_queryset().none()
 
