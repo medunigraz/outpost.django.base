@@ -3,7 +3,7 @@ from base64 import b64decode
 from django.contrib.auth import authenticate, login
 from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
 from rest_framework.viewsets import ModelViewSet
-from rest_framework_extensions.cache.mixins import CacheResponseMixin
+from rest_framework_extensions.cache.mixins import CacheResponseMixin as BaseCacheResponseMixin
 from rest_framework_extensions.etag.mixins import ReadOnlyETAGMixin
 from reversion.views import RevisionMixin
 
@@ -61,11 +61,15 @@ class HttpBasicAuthMixin(object):
         return super().dispatch(request, *args, **kwargs)
 
 
-class ReadOnlyETAGCacheMixin(ReadOnlyETAGMixin, CacheResponseMixin):
+class CacheResponseMixin(BaseCacheResponseMixin):
     object_cache_key_func = key_constructors.DetailKeyConstructor()
     list_cache_key_func = key_constructors.ListKeyConstructor()
     object_etag_func = key_constructors.DetailKeyConstructor()
     list_etag_func = key_constructors.ListKeyConstructor()
+
+
+class ReadOnlyETAGCacheMixin(ReadOnlyETAGMixin, CacheResponseMixin):
+    pass
 
 
 class ContextMixin(object):
