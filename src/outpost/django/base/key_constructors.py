@@ -1,6 +1,8 @@
 import datetime
 import logging
 
+from collections.abc import Iterable
+
 from django.core.cache import cache
 from django.utils.encoding import force_text
 from rest_framework_extensions.key_constructor import bits, constructors
@@ -57,8 +59,23 @@ class AuthenticatedKeyBit(bits.KeyBitBase):
         return "anonymous"
 
 
+class PermissionKeyBit(bits.KeyBitBase):
+    def get_data(self, request, params, **kwargs):
+        user = getattr(request, "user", None)
+        if user:
+            if isinstance(params, str):
+                if user.has_perm(params):
+                    return params
+            if isinstance(params, Iterable):
+                perms = [p for p in params if user.has_perm(p)]
+                if perms:
+                    return ";".join(perms)
+        return "anonymous"
+
+
 class BaseKeyConstructor(constructors.DefaultKeyConstructor):
     updated = MaterializedViewLastUpdateKeyBit()
+    user = bits.UserKeyBit()
     format = bits.FormatKeyBit()
     language = bits.LanguageKeyBit()
     unique_view_id = bits.UniqueViewIdKeyBit()

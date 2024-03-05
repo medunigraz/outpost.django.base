@@ -64,12 +64,11 @@ class HttpBasicAuthMixin(object):
 class CacheResponseMixin(BaseCacheResponseMixin):
     object_cache_key_func = key_constructors.DetailKeyConstructor()
     list_cache_key_func = key_constructors.ListKeyConstructor()
-    object_etag_func = key_constructors.DetailKeyConstructor()
-    list_etag_func = key_constructors.ListKeyConstructor()
 
 
 class ReadOnlyETAGCacheMixin(ReadOnlyETAGMixin, CacheResponseMixin):
-    pass
+    object_etag_func = key_constructors.DetailKeyConstructor()
+    list_etag_func = key_constructors.ListKeyConstructor()
 
 
 class ContextMixin(object):
