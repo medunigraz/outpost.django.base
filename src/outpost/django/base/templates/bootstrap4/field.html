@@ -1,0 +1,21 @@
+{% load crispy_forms_field %}
+
+{% if field.is_hidden %}
+    {{ field }}
+{% else %}
+<div class="row no-gutters mb-1">
+  {% if field.label and form_show_labels %}
+  <label class="col-md-3 p-2 bg-light text-dark {{ label_class }}"{% if field.id_for_label %} for="{{ field.id_for_label }}" {% endif %}>
+      {{ field.label|safe }}
+  </label>
+  {% endif %}
+  <div class="col p-2 bg-white text-dark">
+    {% crispy_field field %}
+      {% if field.field.required %}
+      <small class="text-muted">
+        Required
+      </small>
+      {% endif %}
+  </div>
+</div>
+{% endif %}

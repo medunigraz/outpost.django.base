@@ -1,0 +1,8 @@
+<div class="row no-gutters mb-1">
+  {% if form_show_labels %}
+  <label class="col-md-3 p-2 d-sm-none d-md-block {{ label_class }}"></label>
+  {% endif %}
+  <div class="col p-2 bg-white">
+    {{ fields_output|safe }}
+  </div>
+</div>

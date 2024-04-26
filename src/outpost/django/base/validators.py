@@ -1,21 +1,25 @@
 import logging
-from collections.abc import Iterable
-import entrypoints
-import asyncssh
 import mimetypes
-import pint
+from collections.abc import Iterable
 from os.path import normpath
 from pathlib import PurePath
-from zipfile import ZipFile, BadZipFile
+from zipfile import (
+    BadZipFile,
+    ZipFile,
+)
+
+import asyncssh
+import entrypoints
+import pint
 from croniter import croniter
-from PIL import Image
-from purl import URL
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
+from PIL import Image
+from purl import URL
 from rest_framework.exceptions import ValidationError as APIValidationError
 from rest_framework.utils.representation import smart_repr
 

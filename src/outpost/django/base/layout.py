@@ -1,4 +1,8 @@
-from crispy_forms.bootstrap import UneditableField, StrictButton
+from crispy_forms.bootstrap import (
+    StrictButton,
+    UneditableField,
+)
+
 
 class StaticField(UneditableField):
 

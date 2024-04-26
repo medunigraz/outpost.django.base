@@ -1,13 +1,24 @@
 import logging
 import subprocess
+from functools import cached_property
 
 from celery.result import AsyncResult
+from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.db import IntegrityError, ProgrammingError, connection, models
+from django.db import (
+    IntegrityError,
+    ProgrammingError,
+    connection,
+    models,
+)
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-from PIL import Image, ImageColor, ImageOps
+from PIL import (
+    Image,
+    ImageColor,
+    ImageOps,
+)
 from sqlalchemy.exc import DBAPIError
 
 from .conf import settings
@@ -115,9 +126,7 @@ class MaterializedView(models.Model):
     task = models.UUIDField(blank=True, null=True)
 
     class Meta:
-        ordering = (
-            "name",
-        )
+        ordering = ("name",)
 
     def __str__(self):
         return self.name
@@ -205,3 +214,8 @@ class MaterializedView(models.Model):
             return None
         task = AsyncResult(str(self.task))
         return task.state
+
+    @cached_property
+    def model(self):
+        models = apps.get_models()
+        return next((m for m in models if m._meta.db_table == self.name), None)

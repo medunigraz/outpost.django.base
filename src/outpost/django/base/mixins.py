@@ -1,14 +1,22 @@
 import logging
 from base64 import b64decode
-from django.contrib.auth import authenticate, login
-from rest_framework.utils.mediatypes import media_type_matches, order_by_precedence
+
+from django.contrib.auth import (
+    authenticate,
+    login,
+)
+from rest_framework.utils.mediatypes import (
+    media_type_matches,
+    order_by_precedence,
+)
 from rest_framework.viewsets import ModelViewSet
-from rest_framework_extensions.cache.mixins import CacheResponseMixin as BaseCacheResponseMixin
+from rest_framework_extensions.cache.mixins import (
+    CacheResponseMixin as BaseCacheResponseMixin,
+)
 from rest_framework_extensions.etag.mixins import ReadOnlyETAGMixin
 from reversion.views import RevisionMixin
 
 from . import key_constructors
-
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +58,9 @@ class HttpBasicAuthMixin(object):
             try:
                 authmeth, auth = header.split(" ", 1)
             except ValueError:
-                logger.warning(f"Unable to unpack HTTP basic authentication header: {header}")
+                logger.warning(
+                    f"Unable to unpack HTTP basic authentication header: {header}"
+                )
             else:
                 if authmeth.lower() == "basic":
                     auth = b64decode(auth.strip()).decode("utf-8")

@@ -1,0 +1,26 @@
+{% load crispy_forms_field %}
+{% load i18n %}
+
+{% if field.is_hidden %}
+    {{ field }}
+{% else %}
+<div class="row no-gutters mb-1">
+  {% if field.label and form_show_labels %}
+  <label class="col-md-3 p-2 bg-light text-dark {{ label_class }}"{% if field.id_for_label %} for="{{ field.id_for_label }}" {% endif %}>
+      {{ field.label|safe }}
+  </label>
+  {% endif %}
+  <div class="col p-2 bg-white text-dark">
+    <div class="input-group mb-2">
+      {% crispy_field field 'class' 'form-control' %}
+      <span class="input-group-append{% if active %} active{% endif %}">{{ buttons|safe }}</span>
+    </div>
+    {% if field.field.required %}
+    <small class="text-muted">
+      {% trans "Required" %}
+    </small>
+    {% endif %}
+    {% include 'bootstrap4/layout/help_text_and_errors.html' %}
+  </div>
+</div>
+{% endif %}

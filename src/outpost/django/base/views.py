@@ -6,11 +6,17 @@ from tempfile import mkstemp
 
 from celery.result import AsyncResult
 from django.core.cache import cache
-from django.http import HttpResponse, JsonResponse
+from django.http import (
+    HttpResponse,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import TemplateView, View
+from django.views.generic import (
+    TemplateView,
+    View,
+)
 from PIL import Image as PILImage
 from pudb import set_trace
 from wand.image import Image

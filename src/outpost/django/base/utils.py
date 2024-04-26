@@ -20,7 +20,10 @@ from PySide2.QtWebEngineWidgets import (
     QWebEngineSettings,
     QWebEngineView,
 )
-from PySide2.QtWidgets import QApplication, QLabel
+from PySide2.QtWidgets import (
+    QApplication,
+    QLabel,
+)
 from sqlalchemy.exc import DBAPIError
 from xvfbwrapper import Xvfb
 
@@ -112,7 +115,10 @@ class MaterializedView:
         self.connection = connection
 
     def refresh(self):
-        from django.db import IntegrityError, ProgrammingError
+        from django.db import (
+            IntegrityError,
+            ProgrammingError,
+        )
 
         query_default = f"""
         REFRESH MATERIALIZED VIEW {self.name};

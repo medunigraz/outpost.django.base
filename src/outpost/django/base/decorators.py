@@ -1,7 +1,10 @@
 from functools import wraps
 from locale import setlocale
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import (
+    authenticate,
+    login,
+)
 from django.db.models.signals import (
     post_delete,
     post_init,

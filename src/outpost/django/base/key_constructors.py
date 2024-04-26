@@ -5,7 +5,10 @@ from collections.abc import Iterable
 
 from django.core.cache import cache
 from django.utils.encoding import force_text
-from rest_framework_extensions.key_constructor import bits, constructors
+from rest_framework_extensions.key_constructor import (
+    bits,
+    constructors,
+)
 
 from .models import MaterializedView
 

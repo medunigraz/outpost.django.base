@@ -1,0 +1,54 @@
+{% load crispy_forms_field %}
+{% load i18n %}
+
+{% if field.is_hidden %}
+    {{ field }}
+{% else %}
+<div class="row no-gutters mb-1">
+  {% if field.label and form_show_labels %}
+  <label class="col-md-3 p-2 bg-light text-dark {{ label_class }}"{% if field.id_for_label %} for="{{ field.id_for_label }}" {% endif %}>
+      {{ field.label|safe }}
+  </label>
+  {% endif %}
+  <div class="col p-2 bg-white text-dark">
+    <div class="input-group mb-2">
+      {% if crispy_prepended_text %}
+      <div class="input-group-prepend{% if active %} active{% endif %}">
+        <span class="input-group-text">{{ crispy_prepended_text|safe }}</span>
+      </div>
+      {% endif %}
+      {% if field|is_select and use_custom_control %}
+          {% if field.errors %}
+              {% crispy_field field 'class' 'custom-select is-invalid' %}
+          {% else %}
+              {% crispy_field field 'class' 'custom-select' %}
+          {% endif %}
+      {% else %}
+          {% if field.errors %}
+              {% crispy_field field 'class' 'form-control is-invalid' %}
+          {% else %}
+              {% crispy_field field 'class' 'form-control' %}
+          {% endif %}
+      {% endif %}
+      {% if crispy_appended_text %}
+      <div class="input-group-append{% if active %} active{% endif %}">
+        <span class="input-group-text">{{ crispy_appended_text|safe }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% if field.field.required %}
+    <small class="text-muted">
+      {% trans "Required" %}
+    </small>
+    {% endif %}
+    {% if error_text_inline %}
+      {% include 'bootstrap4/layout/field_errors.html' %}
+    {% else %}
+      {% include 'bootstrap4/layout/field_errors_block.html' %}
+    {% endif %}
+    {% if not help_text_inline %}
+      {% include 'bootstrap4/layout/help_text.html' %}
+    {% endif %}
+  </div>
+</div>
+{% endif %}

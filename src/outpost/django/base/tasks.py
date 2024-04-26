@@ -1,13 +1,26 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import (
+    datetime,
+    timedelta,
+)
 from hashlib import sha256
 
-from billiard import Pipe, Process
-from celery import shared_task, chord
+from billiard import (
+    Pipe,
+    Process,
+)
+from celery import (
+    chord,
+    shared_task,
+)
 from celery.result import AsyncResult
-from celery.states import READY_STATES, PENDING
-#from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
+from celery.states import (
+    PENDING,
+    READY_STATES,
+)
+
+# from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
 from django.core.cache import cache
 from django.db import transaction
@@ -16,7 +29,10 @@ from django.utils.translation import gettext_lazy as _
 from guardian.utils import clean_orphan_obj_perms
 
 from .conf import settings
-from .models import MaterializedView, NetworkedDeviceMixin
+from .models import (
+    MaterializedView,
+    NetworkedDeviceMixin,
+)
 from .signals import materialized_view_refreshed
 from .utils import WebEngineScreenshot
 
@@ -34,7 +50,9 @@ class MaterializedViewTasks:
     SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm';
     """
 
-    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:dispatch")
+    @shared_task(
+        bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:dispatch"
+    )
     def dispatch(task, force=False):
         from django.db import connection
 
@@ -79,7 +97,9 @@ class MaterializedViewTasks:
                                 # beyond it's deadline extension.
                                 logger.debug(f"Refresh task is still pending: {rel}")
                                 continue
-                task = MaterializedViewTasks.refresh.signature((mv.pk,), immutable=True, queue=queue)
+                task = MaterializedViewTasks.refresh.signature(
+                    (mv.pk,), immutable=True, queue=queue
+                )
                 mv.task = task.freeze().id
                 mv.save()
                 tasks.append(task)
@@ -88,7 +108,9 @@ class MaterializedViewTasks:
             )
         connection.close()
 
-    @shared_task(bind=True, ignore_result=False, name=f"{__name__}.MaterializedView:refresh")
+    @shared_task(
+        bind=True, ignore_result=False, name=f"{__name__}.MaterializedView:refresh"
+    )
     def refresh(task, pk):
         mv = MaterializedView.objects.get(pk=pk)
         logger.debug(f"Refresh materialized view: {mv}")
@@ -108,23 +130,27 @@ class MaterializedViewTasks:
         logger.info(f"Refreshed materialized view: {mv}")
         return model._meta.label
 
-    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:result")
+    @shared_task(
+        bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:result"
+    )
     def result(task, results):
         with cache.lock("haystack-writer"):
-            #CeleryHaystackUpdateIndex().run(filter(bool, results), remove=True)
+            # CeleryHaystackUpdateIndex().run(filter(bool, results), remove=True)
             pass
 
 
-class NetworkedDeviceTasks:
 
-    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.NetworkedDevice:refresh")
+class NetworkedDeviceTasks:
+    @shared_task(
+        bind=True, ignore_result=True, name=f"{__name__}.NetworkedDevice:refresh"
+    )
     def refresh(task):
         for cls in NetworkedDeviceMixin.__subclasses__():
             for obj in cls.objects.filter(enabled=True):
                 obj.update()
 
 
-#class LockedCeleryHaystackSignalHandler(CeleryHaystackSignalHandler):
+# class LockedCeleryHaystackSignalHandler(CeleryHaystackSignalHandler):
 #    def run(self, action, identifier, **kwargs):
 #        with cache.lock("haystack-writer"):
 #            super().run(action, identifier, **kwargs)
@@ -141,14 +167,12 @@ class NetworkedDeviceTasks:
 
 
 class GuardianTasks:
-
     @shared_task(bind=True, ignore_result=True, name=f"{__name__}.Guardian:cleanup")
     def cleanup(task):
         clean_orphan_obj_perms()
 
 
 class WebpageTasks:
-
     @shared_task(bind=True, ignore_result=True, name=f"{__name__}.Webpage:sceenshot")
     def screenshot(
         task,
