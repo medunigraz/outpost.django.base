@@ -4,7 +4,7 @@ from django.conf.urls import url
 from . import views
 
 app_name = "base"
-path = "^"
+BASE_PATH = "^"
 
 urlpatterns = [
     url(
