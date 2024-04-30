@@ -1,13 +1,15 @@
-$primary: #07689F;
-$secondary: #C9D6DF;
-$success: #11D3BC;
-$danger: #F67280;
-$info: #A2D5F2;
-$warning: #FF7E67;
-$light: #FAFAFA;
-$dark: #4e4e4e;
+// $primary: #07689F;
+// $secondary: #C9D6DF;
+// $success: #11D3BC;
+// $danger: #F67280;
+// $info: #A2D5F2;
+// $warning: #FF7E67;
+// $light: #FAFAFA;
+// $dark: #4e4e4e;
 
+@import "outpost/_variables.scss";
 @import "bootstrap/bootstrap.scss";
+@import "outpost/_bootswatch.scss";
 
 .navbar .logo {
   height: 2em;
