@@ -4,7 +4,7 @@ import logging
 from collections.abc import Iterable
 
 from django.core.cache import cache
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from rest_framework_extensions.key_constructor import (
     bits,
     constructors,
@@ -30,7 +30,7 @@ class UpdatedAtKeyBit(bits.KeyBitBase):
             value = datetime.datetime.utcnow()
             logger.debug(f"Setting value for UpdatedAt key {key}: {value}")
             cache.set(key, value=value)
-        return force_text(value)
+        return force_str(value)
 
     @classmethod
     def update(cls, instance):
@@ -48,7 +48,7 @@ class MaterializedViewLastUpdateKeyBit(bits.KeyBitBase):
         name = kwargs["view_instance"].get_queryset().model._meta.db_table
         try:
             mv = MaterializedView.objects.exclude(updated=None).get(name=name)
-            return force_text(mv.updated)
+            return force_str(mv.updated)
         except MaterializedView.DoesNotExist:
             pass
         return None

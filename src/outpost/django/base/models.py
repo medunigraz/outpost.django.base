@@ -12,7 +12,7 @@ from django.db import (
     connection,
     models,
 )
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from PIL import (
     Image,
@@ -198,7 +198,7 @@ class MaterializedView(models.Model):
         logger.debug(f"Is materialized view source online: {self.name}")
         with connection.cursor() as cursor:
             cursor.execute(query)
-            for (name, schema, options) in cursor:
+            for name, schema, options in cursor:
                 if options:
                     args = dict([o.split("=", 1) for o in options])
                     try:

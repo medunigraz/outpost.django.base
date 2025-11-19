@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models.fields.related_descriptors import ForwardManyToOneDescriptor
 from django.dispatch import Signal
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 # Taken from:
 # https://stackoverflow.com/questions/31426010/better-arrayfield-admin-widget
@@ -50,11 +50,11 @@ def _filter_fields(include, exclude):
 def _get_hash(algorithm, obj, fields):
     bucket = hashlib.new(algorithm)
     for f in fields:
-        bucket.update(force_text(f.value_from_object(obj)).encode("utf-8"))
+        bucket.update(force_str(f.value_from_object(obj)).encode("utf-8"))
     return bucket.digest()
 
 
-foreign_data_changed = Signal(providing_args=["instance", "field"])
+foreign_data_changed = Signal()
 
 
 class ForeignDataWrapperDescriptor(ForwardManyToOneDescriptor):

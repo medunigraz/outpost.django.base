@@ -38,7 +38,7 @@ class TaskSerializer(serializers.BaseSerializer):
         return {"id": obj.id, "state": obj.state, "info": obj.info}
 
 
-#class HookSerializer(serializers.ModelSerializer):
+# class HookSerializer(serializers.ModelSerializer):
 #    def validate_event(self, event):
 #        if event not in settings.HOOK_EVENTS:
 #            err_msg = f"Unexpected event {event}"

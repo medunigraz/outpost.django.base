@@ -9,15 +9,14 @@ from zipfile import (
 )
 
 import asyncssh
-import entrypoints
 import pint
 from croniter import croniter
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import force_str
+from django.utils.translation import gettext_lazy as _
 from PIL import Image
 from purl import URL
 from rest_framework.exceptions import ValidationError as APIValidationError
@@ -63,7 +62,7 @@ class PublicKeyValidator(object):
     code = "invalid"
 
     def __call__(self, value):
-        value = force_text(value)
+        value = force_str(value)
         try:
             asyncssh.import_public_key(value)
         except asyncssh.public_key.KeyImportError:
@@ -86,7 +85,7 @@ class PrivateKeyValidator(object):
     code = "invalid"
 
     def __call__(self, value):
-        value = force_text(value)
+        value = force_str(value)
         try:
             asyncssh.import_private_key(value)
         except asyncssh.public_key.KeyImportError:
@@ -99,27 +98,6 @@ class PrivateKeyValidator(object):
             and (self.message == other.message)
             and (self.code == other.code)
         )
-
-
-@deconstructible
-class PythonEntryPointsFileValidator(object):
-    """"""
-
-    message = _("No valid entry points found")
-    code = "invalid"
-
-    def __init__(self, names, condition=any):
-        self.names = names
-        self.condition = condition
-
-    def __call__(self, data):
-        if type(data.file) is TemporaryUploadedFile:
-            path = data.file.temporary_file_path()
-        else:
-            path = data.path
-        eps = (entrypoints.get_group_named(n, [path]) for n in self.names)
-        if not self.condition(eps):
-            raise ValidationError(self.message, code=self.code)
 
 
 @deconstructible

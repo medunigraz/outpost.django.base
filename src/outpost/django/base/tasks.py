@@ -139,7 +139,6 @@ class MaterializedViewTasks:
             pass
 
 
-
 class NetworkedDeviceTasks:
     @shared_task(
         bind=True, ignore_result=True, name=f"{__name__}.NetworkedDevice:refresh"

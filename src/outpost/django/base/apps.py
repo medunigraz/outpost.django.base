@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseConfig(AppConfig):
-    name = "outpost.django.base"
+    name = __package__
 
     def ready(self):
         if settings.DEBUG:

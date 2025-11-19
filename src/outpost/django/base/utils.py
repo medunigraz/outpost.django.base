@@ -5,7 +5,7 @@ from functools import partial
 from pathlib import PurePosixPath
 from uuid import uuid4
 
-from PySide2.QtCore import (
+from PySide6.QtCore import (
     QBuffer,
     QByteArray,
     QIODevice,
@@ -15,12 +15,14 @@ from PySide2.QtCore import (
     Signal,
     Slot,
 )
-from PySide2.QtWebEngineWidgets import (
+from PySide6.QtWebEngineCore import (
     QWebEnginePage,
     QWebEngineSettings,
+)
+from PySide6.QtWebEngineWidgets import (
     QWebEngineView,
 )
-from PySide2.QtWidgets import (
+from PySide6.QtWidgets import (
     QApplication,
     QLabel,
 )
@@ -185,7 +187,7 @@ class MaterializedView:
         logger.debug(f"Is materialized view source online: {self.name}")
         with self.connection.cursor() as cursor:
             cursor.execute(query)
-            for (name, schema, options) in cursor:
+            for name, schema, options in cursor:
                 if options:
                     args = dict([o.split("=", 1) for o in options])
                     try:

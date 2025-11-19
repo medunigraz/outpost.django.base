@@ -1,32 +1,30 @@
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path, path
 
 from . import views
 
 app_name = "base"
-BASE_PATH = "^"
+BASE_PATH = ""
 
 urlpatterns = [
-    url(
+    re_path(
         r"^image/convert(?:\/(?P<format>[\w\d]+))?$",
         views.ImageConvertView.as_view(),
         name="image-convert",
     ),
-    url(
+    re_path(
         r"^icon/(?P<pk>[0-9]+)/(?P<color>[0-9a-f]{6})$",
         views.ColorizedIconView.as_view(),
         name="icon",
     ),
-    url(
+    re_path(
         r"^task/(?P<task>(:?[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}|#))/$",
         views.TaskView.as_view(),
         name="task",
     ),
-    url(r"^error/(?P<code>\d+)?$", views.ErrorView.as_view(), name="error"),
-    url(r"^error/(?P<code>\d+)?$", views.ErrorView.as_view(), name="error"),
-    url(r"^$", views.IndexView.as_view(), name="index"),
+    re_path(r"^error/(?P<code>\d+)?$", views.ErrorView.as_view(), name="error"),
+    re_path(r"^error/(?P<code>\d+)?$", views.ErrorView.as_view(), name="error"),
+    path("", views.IndexView.as_view(), name="index"),
 ]
 if settings.DEBUG:
-    urlpatterns.append(
-        url(r"^debugger$", views.DebuggerView.as_view(), name="debugger")
-    )
+    urlpatterns.append(path("debugger", views.DebuggerView.as_view(), name="debugger"))
