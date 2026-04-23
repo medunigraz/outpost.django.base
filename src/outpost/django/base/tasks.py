@@ -130,10 +130,6 @@ class MaterializedViewTasks:
         logger.info(f"Refreshed materialized view: {mv}")
         return model._meta.label
 
-    @shared_task(
-        bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:result"
-    )
-
 
 class NetworkedDeviceTasks:
     @shared_task(
