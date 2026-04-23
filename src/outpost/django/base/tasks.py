@@ -11,7 +11,7 @@ from billiard import (
     Process,
 )
 from celery import (
-    chord,
+    group,
     shared_task,
 )
 from celery.result import AsyncResult
@@ -104,7 +104,7 @@ class MaterializedViewTasks:
                 mv.save()
                 tasks.append(task)
             transaction.on_commit(
-                lambda: chord(tasks)(MaterializedViewTasks.result.s())
+                lambda: group(tasks).apply_async()
             )
         connection.close()
 
@@ -133,11 +133,6 @@ class MaterializedViewTasks:
     @shared_task(
         bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:result"
     )
-    def result(task, results):
-        with cache.lock("haystack-writer"):
-            # CeleryHaystackUpdateIndex().run(filter(bool, results), remove=True)
-            pass
-
 
 
 class NetworkedDeviceTasks:
