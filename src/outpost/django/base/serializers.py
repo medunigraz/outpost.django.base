@@ -1,7 +1,9 @@
 import base64
-import imghdr
+import io
+import mimetypes
 import uuid
 
+import magic
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
@@ -64,15 +66,14 @@ class Base64ImageField(serializers.ImageField):
                 self.fail("invalid_image")
 
             file_name = str(uuid.uuid4())
-            file_extension = self.get_file_extension(file_name, decoded_file)
+            file_extension = self.get_file_extension(decoded_file)
             complete_file_name = f"{file_name}.{file_extension}"
             data = ContentFile(decoded_file, name=complete_file_name)
 
         return super().to_internal_value(data)
 
-    def get_file_extension(self, file_name, decoded_file):
+    def get_file_extension(self, buffer: bytes) -> str:
 
-        extension = imghdr.what(file_name, decoded_file)
-        extension = "jpg" if extension == "jpeg" else extension
-
+        mimetype = magic.from_buffer(buffer, mime=True)
+        extension = mimetypes.guess_extension(mimetype).lstrip(".")
         return extension
