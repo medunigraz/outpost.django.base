@@ -19,7 +19,6 @@ from celery.states import (
     PENDING,
     READY_STATES,
 )
-
 # from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
 from django.core.cache import cache
@@ -103,9 +102,7 @@ class MaterializedViewTasks:
                 mv.task = task.freeze().id
                 mv.save()
                 tasks.append(task)
-            transaction.on_commit(
-                lambda: group(tasks).apply_async()
-            )
+            transaction.on_commit(lambda: group(tasks).apply_async())
         connection.close()
 
     @shared_task(

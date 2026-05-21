@@ -19,9 +19,7 @@ from PySide6.QtWebEngineCore import (
     QWebEnginePage,
     QWebEngineSettings,
 )
-from PySide6.QtWebEngineWidgets import (
-    QWebEngineView,
-)
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
     QApplication,
     QLabel,

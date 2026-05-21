@@ -1,6 +1,5 @@
 import datetime
 import logging
-
 from collections.abc import Iterable
 
 from django.core.cache import cache

@@ -10,9 +10,7 @@ from rest_framework.utils.mediatypes import (
     order_by_precedence,
 )
 from rest_framework.viewsets import ModelViewSet
-from rest_framework_extensions.cache.mixins import (
-    CacheResponseMixin as BaseCacheResponseMixin,
-)
+from rest_framework_extensions.cache.mixins import CacheResponseMixin as BaseCacheResponseMixin
 from rest_framework_extensions.etag.mixins import ReadOnlyETAGMixin
 from reversion.views import RevisionMixin
 
