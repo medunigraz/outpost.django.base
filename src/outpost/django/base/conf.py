@@ -18,6 +18,7 @@ class BaseAppConf(AppConf):
     AWS_ACCESS_KEY = None
     AWS_SECRET_ACCESS_KEY = None
     AWS_REGION_NAME = None
+    NAVIGATION_ORDER = []
 
     class Meta:
         prefix = "base"

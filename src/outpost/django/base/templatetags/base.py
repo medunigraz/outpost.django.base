@@ -58,7 +58,10 @@ def truncate_words(value, limit):
 @register.simple_tag(takes_context=True)
 def navigation(context):
     templates = []
-    for name, app in apps.app_configs.items():
+    installed = list(apps.app_configs.keys())
+    for name in reversed(settings.BASE_NAVIGATION_ORDER):
+        installed.insert(0, installed.pop(installed.index(name)))
+    for name in installed:
         try:
             templates.append(get_template(f"{name}/nav.html"))
         except TemplateDoesNotExist:
