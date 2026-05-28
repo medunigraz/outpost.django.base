@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load i18n %}
+{% load base %}
 
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 justify-content-between">
@@ -14,12 +15,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        {% include 'api/nav.html' %}
-        {% include 'oauth2/nav.html' %}
-        {% include 'networktoken/nav.html' %}
-        {% include 'salt/nav.html' %}
-        {% include 'redirect/nav.html' %}
-        {% include 'borg/nav.html' %}
+        {% navigation %}
       </ul>
       <ul class="navbar-nav ml-auto">
         {% if request.user.is_authenticated %}
