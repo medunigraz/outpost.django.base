@@ -19,6 +19,7 @@ from celery.states import (
     PENDING,
     READY_STATES,
 )
+
 # from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
 from django.core.cache import cache
