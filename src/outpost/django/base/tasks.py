@@ -39,22 +39,17 @@ from .utils import WebEngineScreenshot
 logger = logging.getLogger(__name__)
 
 
-class MaintainanceTaskMixin:
-    options = {"queue": "maintainance"}
-    queue = "maintainance"
-
-
 class MaterializedViewTasks:
-
-    view_query = """
-    SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm';
-    """
 
     @shared_task(
         bind=True, ignore_result=True, name=f"{__name__}.MaterializedView:dispatch"
     )
     def dispatch(task, force=False):
         from django.db import connection
+
+        view_query = """
+        SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm';
+        """
 
         queue = task.request.delivery_info.get("routing_key")
 
