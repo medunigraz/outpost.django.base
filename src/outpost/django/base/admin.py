@@ -4,9 +4,9 @@ from django.utils.translation import gettext_lazy as _
 
 from . import models
 
-admin.site.site_header = _("MUG API Administration")
-admin.site.index_title = _("Welcome to MUG API Administration")
-admin.site.site_title = _("MUG API Administration")
+admin.site.site_header = _("MedUniGraz API")
+admin.site.index_title = _("Welcome to MedUniGraz API Administration")
+admin.site.site_title = _("MedUniGraz API")
 
 
 class NotificationInlineAdmin(GenericTabularInline):
