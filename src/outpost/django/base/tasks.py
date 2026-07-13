@@ -56,11 +56,17 @@ class MaterializedViewTasks:
         models = apps.get_models()
         now = timezone.now()
         deadline = settings.BASE_MATERIALIZED_VIEW_TASK_DEADLINE
+        # Get a dict of all existing MaterializedViews so we can later remove
+        # those who have a backing relation in the database.
+        existing = {mv.name: mv for mv in MaterializedView.objects.all()}
         logger.debug("Dispatching materialized view refresh tasks.")
         with connection.cursor() as relations:
             relations.execute(MaterializedViewTasks.view_query)
             tasks = list()
             for (rel,) in relations:
+                # Relation found, so remove this key from the list of existing
+                # MaterializedViews.
+                existing.pop(rel, None)
                 model = next((m for m in models if m._meta.db_table == rel), None)
                 interval = settings.BASE_MATERIALIZED_VIEW_REFRESH_INTERVAL
                 if model:
@@ -98,6 +104,10 @@ class MaterializedViewTasks:
                 mv.task = task.freeze().id
                 mv.save()
                 tasks.append(task)
+            # Remove left-over materialized views tha no longer have a backing
+            # relation.
+            for mv in existing.values():
+                mv.delete()
             transaction.on_commit(lambda: group(tasks).apply_async())
         connection.close()
 
