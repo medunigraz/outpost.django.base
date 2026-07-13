@@ -38,7 +38,7 @@ class ReadOnlyAdminMixin:
             + [field.name for field in obj._meta.fields]
             + [field.name for field in obj._meta.many_to_many]
         )
-        return [field for field in fields if field not in self.exclude]
+        return [field for field in fields if field not in (self.exclude or [])]
 
     def has_add_permission(self, request, obj=None):
         return False
