@@ -51,17 +51,10 @@ class ReadOnlyAdminMixin:
 
 
 @admin.register(models.MaterializedView)
-class MaterializedViewAdmin(admin.ModelAdmin):
+class MaterializedViewAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     search_fields = ("name", "task")
     list_display = ("name", "updated", "task", "task_state", "interval")
-    readonly_fields = ("name", "task", "updated")
     actions = ["reset_tasks"]
-
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
 
     def reset_tasks(self, request, queryset):
         rows_updated = queryset.update(task=None)
