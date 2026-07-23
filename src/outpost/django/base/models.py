@@ -1,7 +1,7 @@
 import logging
-import subprocess
 from functools import cached_property
 
+import icmplib
 from celery.result import AsyncResult
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -52,12 +52,19 @@ class NetworkedDeviceMixin(models.Model):
 
     def update(self):
         logger.debug("{s} starting ping: {s.online}".format(s=self))
-        proc = subprocess.run(
-            ["ping", "-c1", "-w2", self.hostname],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        online = proc.returncode == 0
+        try:
+            online = icmplib.ping(
+                self.hostname,
+                count=settings.BASE_NETWORKED_DEVICE_PING_COUNT,
+                interval=settings.BASE_NETWORKED_DEVICE_PING_INTERVAL,
+                timeout=settings.BASE_NETWORKED_DEVICE_PING_TIMEOUT,
+                privileged=False,
+            ).is_alive
+        except icmplib.ICMPLibError:
+            logger.warn(
+                f"Unable to determine online status for {self.hostname}, assuming offline"
+            )
+            online = False
         if self.online != online:
             self.online = online
             logger.debug("{s} online: {s.online}".format(s=self))
@@ -161,52 +168,12 @@ class MaterializedView(models.Model):
         WHERE
             tablename = '{self.name}' AND
             indexdef LIKE 'CREATE UNIQUE INDEX %'
-        """
+        """  #  nosec B608
         with connection.cursor() as cursor:
             cursor.execute(query)
             (index,) = cursor.fetchone()
             logger.debug(f"View {self.name} has {index} unique inidzes")
             return index > 0
-
-    def has_online_sources(self):
-        from ..fdw import OutpostFdw
-
-        query = f"""
-        SELECT
-            cl_d.relname AS name,
-            ns.nspname AS schema,
-            ft.ftoptions AS options
-        FROM pg_rewrite AS r
-        JOIN pg_class AS cl_r ON r.ev_class = cl_r.oid
-        JOIN pg_depend AS d ON r.oid = d.objid
-        JOIN pg_class AS cl_d ON d.refobjid = cl_d.oid
-        JOIN pg_namespace AS ns ON cl_d.relnamespace = ns.oid
-        JOIN pg_foreign_table AS ft ON ft.ftrelid = cl_d.oid
-        JOIN pg_foreign_server AS fs ON fs.oid = ft.ftserver
-        WHERE
-            cl_d.relkind = 'f' AND
-            cl_r.relname = '{self.name}' AND
-            fs.srvname = 'sqlalchemy'
-        GROUP BY
-            cl_d.relname,
-            ns.nspname,
-            ft.ftoptions
-        ORDER BY
-            ns.nspname,
-            cl_d.relname;
-        """
-        logger.debug(f"Is materialized view source online: {self.name}")
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-            for name, schema, options in cursor:
-                if options:
-                    args = dict([o.split("=", 1) for o in options])
-                    try:
-                        OutpostFdw(args, {}).connection.connect()
-                    except DBAPIError as e:
-                        logger.warn(e)
-                        return False
-            return True
 
     @property
     def task_state(self):

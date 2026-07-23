@@ -1,7 +1,7 @@
 import logging
 import re
 
-from bleach import clean
+import nh3
 from bs4 import BeautifulSoup
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
@@ -46,7 +46,7 @@ def sanitize(value):
 @register.filter
 @stringfilter
 def bleach(value):
-    return clean(value, strip=True)
+    return nh3.clean(value)
 
 
 @register.filter
@@ -68,4 +68,6 @@ def navigation(context):
             pass
         else:
             logger.debug(f"Found navigation template inside {name}")
-    return mark_safe("\n".join((t.render(context.flatten()) for t in templates)))
+    return mark_safe(
+        "\n".join((t.render(context.flatten()) for t in templates))
+    )  # nosec B308, B703

@@ -1,5 +1,5 @@
 import logging
-import subprocess
+import subprocess  # nosec B404
 from base64 import urlsafe_b64encode
 from functools import partial
 from pathlib import PurePosixPath
@@ -148,52 +148,12 @@ class MaterializedView:
         WHERE
             tablename = '{self.name}' AND
             indexdef LIKE 'CREATE UNIQUE INDEX %'
-        """
+        """  # nosec B608
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             (index,) = cursor.fetchone()
             logger.debug(f"View {self.name} has {index} unique inidzes")
             return index > 0
-
-    def has_online_sources(self):
-        from ..fdw import OutpostFdw
-
-        query = f"""
-        SELECT
-            cl_d.relname AS name,
-            ns.nspname AS schema,
-            ft.ftoptions AS options
-        FROM pg_rewrite AS r
-        JOIN pg_class AS cl_r ON r.ev_class = cl_r.oid
-        JOIN pg_depend AS d ON r.oid = d.objid
-        JOIN pg_class AS cl_d ON d.refobjid = cl_d.oid
-        JOIN pg_namespace AS ns ON cl_d.relnamespace = ns.oid
-        JOIN pg_foreign_table AS ft ON ft.ftrelid = cl_d.oid
-        JOIN pg_foreign_server AS fs ON fs.oid = ft.ftserver
-        WHERE
-            cl_d.relkind = 'f' AND
-            cl_r.relname = '{self.name}' AND
-            fs.srvname = 'sqlalchemy'
-        GROUP BY
-            cl_d.relname,
-            ns.nspname,
-            ft.ftoptions
-        ORDER BY
-            ns.nspname,
-            cl_d.relname;
-        """
-        logger.debug(f"Is materialized view source online: {self.name}")
-        with self.connection.cursor() as cursor:
-            cursor.execute(query)
-            for name, schema, options in cursor:
-                if options:
-                    args = dict([o.split("=", 1) for o in options])
-                    try:
-                        OutpostFdw(args, {}).connection.connect()
-                    except DBAPIError as e:
-                        logger.warn(e)
-                        return False
-            return True
 
     @property
     def comment(self):

@@ -16,6 +16,10 @@ class BaseAppConf(AppConf):
     AWS_SECRET_ACCESS_KEY = None
     AWS_REGION_NAME = None
     NAVIGATION_ORDER = []
+    DELIVER_HOOK_TIMEOUT = 10
+    NETWORKED_DEVICE_PING_COUNT = 2
+    NETWORKED_DEVICE_PING_INTERVAL = 0.5
+    NETWORKED_DEVICE_PING_TIMEOUT = 2
 
     class Meta:
         prefix = "base"

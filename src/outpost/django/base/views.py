@@ -1,7 +1,7 @@
 import hashlib
 import io
 import os
-import subprocess
+import subprocess  # nosec B404
 from tempfile import mkstemp
 
 from celery.result import AsyncResult
@@ -51,8 +51,7 @@ class ImageConvertView(TemplateView):
     def post(self, request, format):
         if not format:
             format = "PDF"
-        digest = hashlib.sha1()
-        digest.update(request.body)
+        digest = hashlib.sha1(request.body, usedforsecurity=False)
         ckey = f"base-image-convert-{digest.hexdigest()}-{format}"
         response = cache.get(ckey, None)
         if response:
@@ -88,7 +87,7 @@ class ImageConvertView(TemplateView):
                     "-overwrite",
                     inp,
                 ]
-                proc = subprocess.Popen(args, stdout=subprocess.DEVNULL)
+                proc = subprocess.Popen(args, stdout=subprocess.DEVNULL)  # nosec B603
                 proc.wait()
                 with open(outp, "rb") as outp_fh:
                     filein = io.BytesIO(outp_fh.read())

@@ -3,6 +3,8 @@ import json
 import requests
 from celery.task import Task
 
+from .conf import settings
+
 
 class DeliverHook(Task):
     max_retries = 5
@@ -19,6 +21,7 @@ class DeliverHook(Task):
                 url=target,
                 data=json.dumps(payload),
                 headers={"Content-Type": "application/json"},
+                timeout=BASE_DELIVER_HOOK_TIMEOUT,
             )
             if response.status_code >= 500:
                 response.raise_for_response()
