@@ -26,14 +26,14 @@ class ContentTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ContentType.objects.all()
     serializer_class = serializers.ContentTypeSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    filter_fields = ("app_label", "model")
+    filterset_fields = ("app_label", "model")
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
     queryset = models.Notification.objects.all()
     serializer_class = serializers.NotificationSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    filter_fields = ("object_id", "content_type")
+    filterset_fields = ("object_id", "content_type")
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
