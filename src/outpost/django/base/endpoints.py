@@ -3,5 +3,6 @@ from . import api
 v1 = [
     (r"base/contenttype", api.ContentTypeViewSet, "base-contenttype"),
     (r"base/notification", api.NotificationViewSet, "base-notification"),
+    (r"base/language", api.LanguageViewSet, "base-language"),
     (r"base/task", api.TaskViewSet, "base-task"),
 ]

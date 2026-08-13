@@ -186,3 +186,23 @@ class MaterializedView(models.Model):
     def model(self):
         models = apps.get_models()
         return next((m for m in models if m._meta.db_table == self.name), None)
+
+
+class Language(models.Model):
+    name = models.CharField(max_length=512)
+    part3 = models.CharField(max_length=3)
+    part2b = models.CharField(max_length=3, blank=True, null=True)
+    part2t = models.CharField(max_length=3, blank=True, null=True)
+    part1 = models.CharField(max_length=2, blank=True, null=True)
+
+    class Meta:
+        ordering = ("name",)
+        indexes = [
+            models.Index(fields=["part3"]),
+            models.Index(fields=["part2b"]),
+            models.Index(fields=["part2t"]),
+            models.Index(fields=["part1"]),
+        ]
+
+    def __str__(self):
+        return str(self.name)

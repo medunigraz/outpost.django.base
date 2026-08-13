@@ -77,3 +77,9 @@ class Base64ImageField(serializers.ImageField):
         mimetype = magic.from_buffer(buffer, mime=True)
         extension = mimetypes.guess_extension(mimetype).lstrip(".")
         return extension
+
+
+class LanguageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Language
+        fields = "__all__"

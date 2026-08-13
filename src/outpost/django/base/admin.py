@@ -69,3 +69,9 @@ class MaterializedViewAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             mv.task = None
 
     reset_tasks.short_description = _("Reset tasks for selected materialized views")
+
+
+@admin.register(models.Language)
+class LanguageAdmin(admin.ModelAdmin):
+    search_fields = ("name", "part3", "part2b", "part2t", "part1")
+    list_display = ("name", "part3", "part2b", "part2t", "part1")

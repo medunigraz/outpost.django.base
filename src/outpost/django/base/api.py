@@ -76,3 +76,10 @@ class TaskViewSet(
 #
 #    def perform_create(self, serializer):
 #        serializer.save(user=self.request.user)
+
+
+class LanguageViewSet(viewsets.ModelViewSet):
+    queryset = models.Language.objects.all()
+    serializer_class = serializers.LanguageSerializer
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    filterset_fields = ("name", "part3", "part2b", "part2t", "part1")
