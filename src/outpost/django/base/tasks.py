@@ -51,7 +51,10 @@ class MaterializedViewTasks:
         SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm';
         """
 
-        queue = task.request.delivery_info.get("routing_key")
+        try:
+            queue = task.request.delivery_info.get("routing_key")
+        except:
+            queue = None
 
         models = apps.get_models()
         now = timezone.now()
@@ -61,7 +64,7 @@ class MaterializedViewTasks:
         existing = {mv.name: mv for mv in MaterializedView.objects.all()}
         logger.debug("Dispatching materialized view refresh tasks.")
         with connection.cursor() as relations:
-            relations.execute(MaterializedViewTasks.view_query)
+            relations.execute(view_query)
             tasks = list()
             for (rel,) in relations:
                 # Relation found, so remove this key from the list of existing
