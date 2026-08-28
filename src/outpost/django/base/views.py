@@ -48,7 +48,7 @@ class TaskView(View):
 class ImageConvertView(TemplateView):
     template_name = "outpost/image-convert.html"
 
-    def post(self, request, format):
+    def post(self, request, format=None):
         if not format:
             format = "PDF"
         digest = hashlib.sha1(request.body, usedforsecurity=False)
