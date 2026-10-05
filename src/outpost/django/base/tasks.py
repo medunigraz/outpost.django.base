@@ -22,6 +22,7 @@ from celery.states import (
 
 # from celery_haystack.tasks import CeleryHaystackSignalHandler, CeleryHaystackUpdateIndex
 from django.apps import apps
+from django.core import management
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
@@ -208,3 +209,9 @@ class WebpageTasks:
     def worker(url, width, height, conn):
         app = WebEngineScreenshot(url, width, height)
         conn.send(app.run())
+
+
+class ManagementTasks:
+    @shared_task(bind=True, ignore_result=True, name=f"{__name__}.Management:command")
+    def command(task, cmd, *args, **kwargs):
+        management.call_command(cmd, *args, **kwargs)
